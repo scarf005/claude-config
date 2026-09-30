@@ -64,7 +64,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.local/bin/notify --id \"$CLAUDE_PROJECT_DIR\" \"Claude Code\" \"입력 대기 중\""
+            "command": "python3 \"$HOME/.config/pi/bin/agent-notify.py\" claude",
+            "timeout": 10
           }
         ]
       }
@@ -74,7 +75,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.local/bin/notify --id \"$CLAUDE_PROJECT_DIR\" \"Claude Code\" \"작업 완료: $(basename \"$CLAUDE_PROJECT_DIR\")\""
+            "command": "python3 \"$HOME/.config/pi/bin/agent-notify.py\" claude",
+            "timeout": 10
           }
         ]
       }
@@ -99,7 +101,7 @@
       }
     }
   },
-  "tui": "default",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "autoMode": {
