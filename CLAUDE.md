@@ -20,9 +20,9 @@
 
 ## Implementation
 - Explore first, plan multi-file changes, then implement and verify.
-- Opus 5.5 designs (investigation, plan, acceptance criteria) and by default delegates implementation to the
-  `implementer` agent (Sonnet 5.5); review its report and diff before reporting done. Implement directly only for
-  trivial edits or when asked.
+- Design the plan and acceptance criteria, then explicitly invoke the `implementer` agent for nontrivial implementation.
+  Implement directly only for trivial edits or when asked. Delegate investigation or review only when requested or when
+  independent review is required; do not send research to the implementation-only agent.
 - Before editing, read every applicable `AGENTS.md`/`CLAUDE.md` from the repository root to the target and check
   `git status --short`. Treat existing changes as user-owned; never discard, stage, commit, or mix them without permission.
 - Choose the simplest maintainable general solution satisfying the full invariant, not the smallest diff or a
@@ -49,6 +49,13 @@
 - Check a tool's existing invocation before installing. For worktrees use `git gtr`.
 - Prefer `xh` for web requests, `rg`/`fd` for search, `gh` for GitHub, `playwright-cli` for browser checks.
 - User shell is fish: avoid bash-only syntax in commands given to the user; use `--body-file` for multiline `gh` text.
-- Delegate to subagents only when requested or when independent review is required.
+- Before delegation, check the selected agent's effective model, tools, permissions and working directory. Supply the
+  task, constraints, source/diff paths and acceptance checks; custom agents do not automatically inherit conversation history.
+- A completion notification is not acceptance. Require final text and inspectable results: relevant tool observations
+  for research, actual diff and validation for implementation. Missing/empty results are incomplete; resume the same agent
+  with the missing task or material instead of accepting an acknowledgement or duplicating its work.
+- If a fresh background agent stalls or reports empty completion, compare the same small read-only task in a new session
+  with `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`; use a `fork` only when inherited context is needed. Do not permanently
+  disable background work or loosen permissions without evidence that the comparison resolves the failure.
 - Prefer functional style, TypeScript options objects for 3+ arguments, C++ structs, single-line arrow functions, and
   compact YAML unless repository conventions differ.

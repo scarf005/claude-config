@@ -50,4 +50,6 @@ is wrong or blocked, stop and report the evidence instead of improvising a diffe
 
 ## Report back (concise)
 Branch and commit hashes, what changed and why (with measured numbers), deviations from the plan
-and their reasons, the exact final test line, what you could not verify or do.
+and their reasons, the exact final test line, what you could not verify or do. Include inspectable diff/artifact paths
+and distinguish checks you ran from evidence supplied by the parent. If the task, tools or validation are blocked,
+report an incomplete result with the exact gap; an acknowledgement or planned next steps are not implementation.
