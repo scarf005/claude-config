@@ -14,6 +14,9 @@
   implementation. If the exact result is blocked, report the blocker rather than declaring a workaround complete.
 - Mod ports include the minimal host-engine support needed to preserve their behavior; keep unrelated engine changes out.
 - Redact credentials, tokens, secrets, and sensitive payloads from output.
+- At task completion, briefly restate in your own words the user's goals and underlying problem (not a task log),
+  then connect the observed result and remaining gaps to them. Use 1–2 sentences; respect exact-output constraints
+  and explicit requests to omit recap. Use the `recap` skill for an explicit recap or alignment check.
 
 ## Implementation
 - Explore first, plan multi-file changes, then implement and verify.
