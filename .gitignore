@@ -1,0 +1,9 @@
+*
+!.gitignore
+!CLAUDE.md
+!settings.json
+!agents/
+!agents/**
+!skills/
+!skills/**
+/skills/synced/
