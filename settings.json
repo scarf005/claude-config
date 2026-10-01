@@ -101,6 +101,7 @@
       }
     }
   },
+  "prefersReducedMotion": true,
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
