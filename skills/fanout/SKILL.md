@@ -4,63 +4,45 @@ description: Plan a batch of changes, split it into N file-disjoint work package
 argument-hint: "[agent count] [optional task list]"
 ---
 
-# Fanout: plan here, implement in parallel worktrees, merge back
+# Fanout
 
-You (the main session) do the investigation, planning, splitting, merging and final report. The
-`implementer` subagents do the edits. Speak to the user in their language.
+You investigate, plan, split, merge and report; `implementer` subagents edit.
 
-## 1. Understand and plan
-- Take the task list from the arguments or the recent conversation. The first argument, when a
-  number, is the maximum agent count N (default: as many as there are independent packages, up to 3).
-- Investigate each item yourself until the cause and the fix are concrete: files, functions,
-  current values, the observed bug. Vague plans produce vague work.
-- For each item write: goal, verified diagnosis, required behavior, constraints (what must not
-  change), acceptance tests (with numbers where measurable), and commit subject(s).
+## 1. Plan
+- Tasks come from the arguments or the conversation. A leading number is the maximum agent count N (default: one
+  per independent package, up to 3).
+- Investigate each item until files, functions, current values and the observed bug are concrete. Per item write:
+  goal, verified diagnosis, required behavior, what must not change, acceptance tests (numbers where measurable),
+  commit subject(s).
 
-## 2. Split into packages
-- Group items so that packages touch disjoint files, or at least disjoint functions of a shared
-  file. Name the ownership explicitly in each prompt ("in X touch only Y; another agent owns Z").
-- Items that must edit the same function go in the same package, or run sequentially.
-- If work already running (an earlier agent or uncommitted changes) touches the same code, hold
-  that package until it lands and base it on the newer commit. Tell the user what waits and why.
+## 2. Split
+- Packages own disjoint files, or disjoint functions of a shared file; name ownership in each prompt. Items editing
+  the same function share a package or run sequentially.
+- Hold a package whose code is touched by running work or uncommitted changes until that lands; tell the user.
 
-## 3. Create worktrees from the LOCAL base
-- Check the repository's worktree tool first. With git-gtr:
-  `git gtr new agent/<slug> --from <base> --no-fetch --yes`, where `<base>` is the local branch
-  (usually `main`). Without git-gtr: `git worktree add -b agent/<slug> <path> <base>`.
-- Never rely on a default base: it may be a stale remote-tracking ref. Verify with
-  `git worktree list` that every worktree sits on the current local base commit.
-- Do not use the Agent tool's own `isolation: "worktree"` for this; it may branch from a stale ref.
+## 3. Worktrees from the local base
+- `git gtr new agent/<slug> --from <base> --no-fetch --yes` (without gtr:
+  `git worktree add -b agent/<slug> <path> <base>`). `<base>` is the local branch; default refs may be stale remote
+  refs, so verify each worktree's commit with `git worktree list`.
+- Do not use the Agent tool's `isolation: "worktree"`; it may branch from a stale ref.
 
-## 4. Launch implementers
-- Spawn one `implementer` agent per package (`subagent_type: "implementer"`), in parallel, in the
-  background. Each prompt contains: the absolute worktree path and branch, "work only there",
-  file/function ownership, the full plan for its items, the setup and test commands, the baseline
-  expectation, commit subjects, and the report format.
-- Tell the user in a short table which package runs where and what is waiting.
+## 4. Launch
+- One background `implementer` per package, in parallel. Each prompt: absolute worktree path and branch, "work only
+  there", ownership, the full item plans, setup and targeted test commands, baseline, commit subjects, report format,
+  and "the parent runs the full suite after merging" (parallel full suites contend for CPU and slow every agent).
+- Show the user a short table of packages, worktrees and anything waiting.
+- Forward later scope changes to a running agent with SendMessage.
 
-## 5. Merge back
-- As each agent finishes, read its report critically: confirm commits exist
-  (`git -C <worktree> log --oneline <base>..HEAD`), check deviations, and spot-check risky diffs.
-- In the main checkout on `<base>`, bring the commits in with
-  `git cherry-pick <base>..agent/<slug>` (or `git merge --no-ff agent/<slug>` if the user prefers
-  merge commits). Resolve conflicts by keeping both sides' intent; never drop another package's
-  change to make a conflict go away.
-- After the last package, run the full test suite on `<base>` yourself and report the exact final
-  line. If it fails, fix or send the failure back to the owning agent.
-- Remove merged worktrees and branches (`git gtr rm agent/<slug>` or `git worktree remove` +
-  `git branch -d`). Leave anything unmerged in place and say so.
+## 5. Merge
+- On each completion, check the report: commits exist (`git -C <worktree> log --oneline <base>..HEAD`), deviations,
+  risky diffs.
+- On `<base>` in the main checkout: `git cherry-pick <base>..agent/<slug>` (or `git merge --no-ff` if preferred).
+  Resolve conflicts keeping both intents; never drop another package's change.
+- After the last package, run the full suite once as a tracked background task and report the exact final line.
+  Send failures back to the owning agent or fix them.
+- Remove merged worktrees and branches (`git gtr rm agent/<slug>`); leave unmerged ones and say so.
+- Engine/generator by-products (import caches, `.uid` files): commit only kinds the repository tracks.
 
 ## 6. Report
-Per package: what changed (with the agents' measured numbers), commit hashes on `<base>`,
-conflicts and how they were resolved, validation evidence, and what still needs the user's eyes
-(visuals, audio, feel). Do not claim what was not verified.
-
-## Pitfalls learned
-- Worktrees created from a default/remote ref started on an old commit and conflicted on merge.
-- Two agents running the full suite in the same checkout see each other's half-written edits;
-  parallel work needs separate worktrees.
-- Engines and generators create by-products (import caches, metadata files); decide per file
-  whether the repository tracks that kind of file.
-- A later user message can change a running package's scope; forward it with SendMessage instead
-  of waiting for the agent to finish.
+Per package: changes with measured numbers, commit hashes on `<base>`, conflicts and resolutions, validation
+evidence, and what still needs the user's eyes (visuals, audio, feel). Claim nothing unverified.
