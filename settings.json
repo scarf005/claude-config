@@ -102,6 +102,11 @@
     }
   },
   "prefersReducedMotion": true,
+  "spinnerVerbs": {
+    "mode": "replace",
+    "verbs": ["working"]
+  },
+  "spinnerTipsEnabled": false,
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
