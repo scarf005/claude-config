@@ -1,6 +1,6 @@
 ---
 name: fanout
-description: Plan a batch of changes, split it into N file-disjoint work packages, run each on its own git worktree with an `implementer` subagent (Sonnet) in parallel, then merge them back into the local base branch and validate. Use when the user asks to fan out, parallelize, or "agentify" work across several agents or worktrees, e.g. `/fanout 3`.
+description: Plan a batch of changes, split it into N file-disjoint work packages, run each on its own git worktree with an `implementer` subagent (Opus) in parallel, then merge them back into the local base branch and validate. Use when the user asks to fan out, parallelize, or "agentify" work across several agents or worktrees, e.g. `/fanout 3`.
 argument-hint: "[agent count] [optional task list]"
 ---
 

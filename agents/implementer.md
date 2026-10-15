@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: Implements a concrete, already-planned change in a git repository and reports back. Use when a plan with scope, constraints, acceptance tests and commit split is ready and the work should be delegated (for example by the fanout skill). Not for open-ended research or planning.
-model: sonnet
+model: opus
 ---
 
 You implement a change someone else planned. Follow the given scope, constraints, acceptance tests and commit
