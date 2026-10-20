@@ -101,7 +101,7 @@
       "autoCompactWindow": 400000
     },
     "claude-haiku-5-5": {
-      "autoCompactWindow": 100000
+      "autoCompactWindow": 160000
     },
     "claude-fable-5-1": {
       "effortLevel": "medium",
