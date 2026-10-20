@@ -1,5 +1,4 @@
 {
-  "model": "claude-opus-5-5",
   "attribution": {
     "commit": "",
     "pr": ""
@@ -18,47 +17,23 @@
       "Bash(gh pr diff:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh issue view:*)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gio trash:*)"
     ],
     "deny": [
+      "Bash(rm:*)",
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",
       "Read(~/.ssh/**)",
       "Read(~/.config/pi/agent/auth.json)",
-      "Read(~/.config/claude-2/.credentials.json)"
-    ]
+      "Read(~/.config/claude-2/.credentials.json)",
+      "Bash(grep:*)"
+    ],
+    "defaultMode": "auto"
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/AGENTS.md\" ]; then cat \"$CLAUDE_PROJECT_DIR/AGENTS.md\"; fi"
-          }
-        ]
-      },
-      {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/AGENTS.md\" ]; then cat \"$CLAUDE_PROJECT_DIR/AGENTS.md\"; fi"
-          }
-        ]
-      },
-      {
-        "matcher": "compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/AGENTS.md\" ]; then cat \"$CLAUDE_PROJECT_DIR/AGENTS.md\"; fi"
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "hooks": [
@@ -89,9 +64,11 @@
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
+    "github@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "assisted-by@assisted-by-local": true
+    "assisted-by@assisted-by-local": true,
+    "frontend-design@claude-plugins-official": false,
+    "cloudflare@cloudflare": false
   },
   "extraKnownMarketplaces": {
     "assisted-by-local": {
@@ -99,15 +76,40 @@
         "source": "directory",
         "path": "/home/scarf/repo/assisted-by"
       }
+    },
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      }
     }
   },
-  "prefersReducedMotion": true,
+  "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
-    "verbs": ["working"]
+    "verbs": [
+      "working"
+    ]
   },
-  "spinnerTipsEnabled": false,
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium",
+      "autoCompactWindow": 400000
+    },
+    "claude-sonnet-5-5": {
+      "effortLevel": "medium",
+      "autoCompactWindow": 400000
+    },
+    "claude-haiku-5-5": {
+      "autoCompactWindow": 100000
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium",
+      "autoCompactWindow": 400000
+    }
+  },
   "tui": "fullscreen",
+  "prefersReducedMotion": true,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "autoMode": {
@@ -137,5 +139,6 @@
       "**Trusted repo**: /home/scarf/repo/etc/hypha (local checkout, no configured remotes)",
       "**Org-specific CLIs**: None configured — project uses godot, xvfb-run, ffmpeg routinely per usage evidence"
     ]
-  }
+  },
+  "model": "sonnet"
 }
