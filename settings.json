@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
   "attribution": {
     "commit": "",
     "pr": ""
@@ -19,7 +22,8 @@
       "Bash(gh issue view:*)",
       "Bash(gh run view:*)",
       "Bash(gh run list:*)",
-      "Bash(gio trash:*)"
+      "Bash(gio trash:*)",
+      "Bash(git gtr clean:*)"
     ],
     "deny": [
       "Bash(rm:*)",
@@ -33,6 +37,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "sonnet",
   "hooks": {
     "Notification": [
       {
@@ -54,8 +59,43 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/korean_reply.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/pre_compact_snapshot.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/post_compact_restore.py\"",
+            "timeout": 30
+          }
+        ]
       }
     ]
+  },
+  "worktree": {
+    "baseRef": "head"
   },
   "statusLine": {
     "type": "command",
@@ -81,6 +121,12 @@
       "source": {
         "source": "github",
         "repo": "cloudflare/skills"
+      }
+    },
+    "cc-stretch": {
+      "source": {
+        "source": "github",
+        "repo": "pro-vi/cc-stretch"
       }
     }
   },
@@ -139,6 +185,5 @@
       "**Trusted repo**: /home/scarf/repo/etc/hypha (local checkout, no configured remotes)",
       "**Org-specific CLIs**: None configured — project uses godot, xvfb-run, ffmpeg routinely per usage evidence"
     ]
-  },
-  "model": "sonnet"
+  }
 }
