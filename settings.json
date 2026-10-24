@@ -1,6 +1,7 @@
 {
   "env": {
-    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
+    "CLAUDE_CODE_FORCE_TERMINAL_IMAGES": "1"
   },
   "attribution": {
     "commit": "",
@@ -107,10 +108,17 @@
     "github@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "assisted-by@assisted-by-local": true,
+    "raster-view@local-mods": true,
     "frontend-design@claude-plugins-official": false,
     "cloudflare@cloudflare": false
   },
   "extraKnownMarketplaces": {
+    "local-mods": {
+      "source": {
+        "source": "directory",
+        "path": "/home/scarf/.config/claude/mods"
+      }
+    },
     "assisted-by-local": {
       "source": {
         "source": "directory",
