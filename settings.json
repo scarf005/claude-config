@@ -24,7 +24,8 @@
       "Bash(gh run view:*)",
       "Bash(gh run list:*)",
       "Bash(gio trash:*)",
-      "Bash(git gtr clean:*)"
+      "Bash(git gtr clean:*)",
+      "EnterWorktree"
     ],
     "deny": [
       "Bash(rm:*)",
@@ -38,7 +39,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -67,6 +68,18 @@
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/korean_reply.py\"",
             "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "EnterWorktree",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}'",
+            "timeout": 5
           }
         ]
       }
