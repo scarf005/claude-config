@@ -1,5 +1,7 @@
 *
 !.gitignore
+!.pre-commit-config.yaml
+!justfile
 !CLAUDE.md
 !settings.json
 !agents/
