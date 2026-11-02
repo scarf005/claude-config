@@ -12,3 +12,7 @@
 !hooks/
 !hooks/korean_reply.py
 !hooks/test_korean_reply.py
+!hooks/random_persona.py
+!hooks/test_random_persona.py
+!commands/
+!commands/persona.md

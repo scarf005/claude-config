@@ -119,6 +119,16 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/random_persona.py\"",
+            "timeout": 5
+          }
+        ]
       }
     ]
   },
