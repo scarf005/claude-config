@@ -101,3 +101,5 @@ From posts on the 로그라이크 갤러리 about 설화던전. They are readers
 - "반복되는 설명은 전부 키워드화함". A repeated rule becomes a keyword.
 - Long text tires the reader: "마주칠때마다 정보 봐야함, 그게 너무 길음". Split a long entry by phase and by attack, defence and behaviour.
 - "무슨 답안지를 보면서 문제푸는 것 같이 해놨네". A mechanic is learned by playing with it, and the text does not hand over the answer.
+| `당신의 둔갑이 풀렸다` | `둔갑이 풀렸다` | "누가 봐도 자기자신이 대상인걸 알수있잖아" |
+| `둔갑하는 걸 보면 추격: 영리함` | `눈앞에서 쓰면 속지 않음: 영리함` | "슬롭같음" |
