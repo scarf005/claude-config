@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Stop hook: block a turn whose visible assistant text is not Korean.
 
-Checks every line of the text blocks of the final reply (the assistant entries after the last tool result; earlier mid-turn notes are already sent and a rewrite cannot undo them). A line (code spans, blocks and path/URL tokens
+Checks every line of the text blocks of the final reply (the assistant entries after the last tool result; earlier mid-turn notes are already sent and a rewrite cannot undo them), plus the
+input's last_assistant_message, since the hook can run before the transcript has the last entry. A line (code spans, blocks and path/URL tokens
 removed; markdown table rows skipped, since their cells are names and labels) with 4+ Latin words and fewer than half as many Hangul syllables as Latin letters blocks the stop and asks for
 a Korean rewrite that does not mention the violation; English with a Korean ending appended is caught too.
 """
@@ -39,7 +40,7 @@ def main():
         if e.get("type") == "assistant"
         for c in e.get("message", {}).get("content") or []
         if isinstance(c, dict) and c.get("type") == "text"
-    ]
+    ] + [data.get("last_assistant_message") or ""]
     bad = [t for t in texts if is_english(t)]
     if bad:
         print(json.dumps({
