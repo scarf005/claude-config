@@ -55,7 +55,8 @@ The upstream pattern 33 calls `할 수 있다` overused. In game text and short 
 | `자신에게는 그림자나 둔갑만 건다` | `스스로에겐 그림자나 둔갑만 걸 수 있다` |
 | `밟으면 위층으로 오른다` | `위층으로 올라갈 수 있다` |
 | `어두워서 누가 있는지 모른다` | `어두워서 누가 있는지 알 수 없다` |
-| `미호를 못 본다` | `볼 수 없다` |
+| `미호를 못 본다` | `미호를 볼 수 없다` |
+| `볼 수 없다` on a creature hover | `미호를 볼 수 없다` |
 | `처치 시 X 부적` | `처치 시 X 부적을 얻을 수 있다` |
 | `당신을 보면 외친다: 낄낄 6칸` | `말할 수 있다.` |
 
@@ -69,6 +70,8 @@ The upstream pattern 33 calls `할 수 있다` overused. In game text and short 
 | `쪽마루` | `마루` | |
 | `쇠 혼불` | `정전기` or `번개` | "혼불은 물리적 실체가 없는데 쇠 혼불이라니 이상해" |
 | `여우불` on an enemy | `도깨비불` | "애초에 여우가 아닌데" |
+
+Keep the object when the subject is not the thing shown. User on a bare `볼 수 없다` on a creature hover: "마치 '미호가 당신이 호버한 적을 볼 수 없다'는 뜻으로 읽히잖아".
 
 A phrase the reader cannot parse is a defect. The user asked what these mean: `당신을 본 걸로 안다`, `모양: 보이는 적`, `위에서 매 초 2`.
 
