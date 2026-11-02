@@ -9,3 +9,6 @@
 !skills/
 !skills/**
 /skills/synced/
+!hooks/
+!hooks/korean_reply.py
+!hooks/test_korean_reply.py
