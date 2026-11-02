@@ -58,7 +58,7 @@ The upstream pattern 33 calls `할 수 있다` overused. In game text and short 
 | `미호를 못 본다` | `당신을 볼 수 없다` |
 | `볼 수 없다` on a creature hover | `당신을 볼 수 없다` |
 | `처치 시 X 부적` | `처치 시 X 부적을 얻을 수 있다` |
-| `당신을 보면 외친다: 낄낄 6칸` | `말할 수 있다.` |
+| `당신을 보면 외친다: 낄낄 6칸` | `말할 수 있다.` (the objection is `낄낄`: "낄낄이 대체 뭔 상관?") |
 
 ## Use the plain word; never coin one
 
