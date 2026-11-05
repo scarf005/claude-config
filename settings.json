@@ -40,6 +40,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "skillOverrides": {
     "grill-me": "off"
   },
