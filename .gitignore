@@ -14,5 +14,7 @@
 !hooks/test_korean_reply.py
 !hooks/random_persona.py
 !hooks/test_random_persona.py
+!hooks/sticker.py
+!hooks/test_sticker.py
 !commands/
 !commands/persona.md

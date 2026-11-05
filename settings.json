@@ -50,6 +50,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/sticker.py\" inject",
+            "timeout": 5
+          },
+          {
+            "type": "command",
             "command": "jq -c '{\"소 \":\"sonnet\",\"하 \":\"haiku\"}[(.prompt // \"\")[0:2]] | select(.) | {hookSpecificOutput:{hookEventName:\"UserPromptSubmit\",additionalContext:\"The prompt starts with a model prefix: do its task through an Agent call with model \\(.) instead of in the main session. The prefix is not part of the task. Ignore this when the rest is no task, such as a sigh.\"}}'",
             "timeout": 5
           }
@@ -82,6 +87,11 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/korean_reply.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/sticker.py\" check",
             "timeout": 10
           }
         ]
