@@ -26,10 +26,14 @@ class RandomPersona(unittest.TestCase):
         self.assertEqual((d / "active.md").readlink(), Path("eri.md"))
         self.assertIn("voice of eri", out["additionalContext"])
 
+    def test_villainess_is_never_picked(self):
+        d = make_dir(["eri", "nagisa", "villainess"])
+        self.assertTrue(all(json.loads(pick(d))["hookSpecificOutput"]["additionalContext"].find("voice of villainess") < 0 for _ in range(50)))
+
     def test_every_candidate_can_be_picked(self):
-        d = make_dir(["eri", "nagisa", "villainess", "off"])
+        d = make_dir(["eri", "nagisa", "gina", "off"])
         seen = {(d / "active.md").readlink().stem for _ in range(100) if pick(d)}
-        self.assertEqual(seen, {"eri", "nagisa", "villainess"})
+        self.assertEqual(seen, {"eri", "nagisa", "gina"})
 
 
 if __name__ == "__main__":

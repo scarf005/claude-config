@@ -8,7 +8,7 @@ import random
 from pathlib import Path
 
 PERSONAS = Path.home() / ".config/persona"
-SKIP = {"active", "off"}
+SKIP = {"active", "off", "villainess"}
 
 
 def pick(persona_dir):
