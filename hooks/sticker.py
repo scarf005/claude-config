@@ -45,7 +45,7 @@ def check(persona_dir, data):
         return ""
     return json.dumps({
         "decision": "block",
-        "reason": "The reply has no sticker. Send it again with 1-3 sticker paths on their own lines at the end, picked by mood from:\n" + candidates(*loaded),
+        "reason": "Reply with only 1-3 sticker paths, one per line, picked by mood from the list below. Write no other text, no acknowledgement and no mention of this check:\n" + candidates(*loaded),
     }, ensure_ascii=False)
 
 

@@ -49,6 +49,7 @@ class Check(unittest.TestCase):
         out = json.loads(self.run_check("끝이에요"))
         self.assertEqual(out["decision"], "block")
         self.assertIn(PACK, out["reason"])
+        self.assertIn("only", out["reason"])
 
     def test_sticker_buried_above_the_tail_blocks(self):
         self.assertTrue(self.run_check(f"{PACK}/001.png\na\nb\nc"))
