@@ -29,18 +29,42 @@
       "EnterWorktree"
     ],
     "deny": [
+      "Bash(*DROP DATABASE*)",
+      "Bash(*DROP TABLE*)",
+      "Bash(*TRUNCATE TABLE*)",
+      "Bash(adb *pm clear*)",
+      "Bash(adb *shell rm*)",
+      "Bash(adb *uninstall*)",
+      "Bash(dd:*)",
+      "Bash(fastboot *erase*)",
+      "Bash(fastboot *flash*)",
+      "Bash(fastboot *format*)",
+      "Bash(find *-delete*)",
+      "Bash(find *-exec rm*)",
+      "Bash(git clean:*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard:*)",
+      "Bash(grep:*)",
+      "Bash(mkfs*)",
       "Bash(rm:*)",
+      "Bash(rsync *--delete*)",
+      "Bash(shred:*)",
+      "Bash(unlink:*)",
+      "Bash(wipefs:*)",
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",
-      "Read(~/.ssh/**)",
-      "Read(~/.config/pi/agent/auth.json)",
       "Read(~/.config/claude-2/.credentials.json)",
-      "Bash(grep:*)"
+      "Read(~/.config/pi/agent/auth.json)",
+      "Read(~/.ssh/**)",
+      "mcp__rea__uninstall_adb_package"
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "sonnet",
   "skillOverrides": {
     "grill-me": "off"
   },
@@ -130,16 +154,6 @@
             "timeout": 30
           }
         ]
-      },
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.config/claude/hooks/random_persona.py\"",
-            "timeout": 5
-          }
-        ]
       }
     ]
   },
@@ -155,10 +169,10 @@
     "clangd-lsp@claude-plugins-official": true,
     "github@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "assisted-by@assisted-by-local": true,
-    "raster-view@local-mods": true,
     "frontend-design@claude-plugins-official": false,
-    "cloudflare@cloudflare": false
+    "cloudflare@cloudflare": false,
+    "assisted-by@assisted-by-local": true,
+    "inline-image@inline-image": true
   },
   "extraKnownMarketplaces": {
     "local-mods": {
@@ -184,7 +198,69 @@
         "source": "github",
         "repo": "pro-vi/cc-stretch"
       }
+    },
+    "inline-image": {
+      "source": {
+        "source": "github",
+        "repo": "scarf005/inline-image"
+      }
     }
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "*.github.com",
+        "*.githubusercontent.com",
+        "crates.io",
+        "*.crates.io",
+        "static.rust-lang.org",
+        "registry.npmjs.org",
+        "*.npmjs.org",
+        "jsr.io",
+        "deno.land",
+        "*.deno.land",
+        "pypi.org",
+        "files.pythonhosted.org"
+      ],
+      "allowAllUnixSockets": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/repo",
+        "~/.cache",
+        "~/.cargo",
+        "~/.rustup",
+        "~/.local/share/Trash",
+        "~/.local/state",
+        "~/.gnupg"
+      ],
+      "denyRead": [
+        "~/.aws",
+        "~/.gnupg/private-keys-v1.d",
+        "~/.gnupg/secring.gpg"
+      ],
+      "denyWrite": [
+        "~/.gnupg/private-keys-v1.d"
+      ]
+    },
+    "excludedCommands": [
+      "gh *",
+      "gio *",
+      "adb *",
+      "ssh *",
+      "scp *",
+      "flock *",
+      "systemd-run *",
+      "systemctl *",
+      "gamescope *",
+      "gamescopectl *",
+      "playwright-cli *"
+    ]
   },
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
