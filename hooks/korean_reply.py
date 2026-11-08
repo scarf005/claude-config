@@ -2,8 +2,8 @@
 """Stop hook: block a turn whose visible assistant text is not Korean.
 
 Checks every line of the text blocks of the final reply (the assistant entries after the last tool result; earlier mid-turn notes are already sent and a rewrite cannot undo them), plus the
-input's last_assistant_message, since the hook can run before the transcript has the last entry. A line (code spans, blocks and path/URL tokens
-removed; markdown table rows skipped, since their cells are names and labels) with 4+ Latin words and fewer than half as many Hangul syllables as Latin letters blocks the stop and asks for
+input's last_assistant_message, since the hook can run before the transcript has the last entry. A line (code spans, blocks, double-quoted spans and path/URL tokens
+removed; markdown table rows skipped, since their cells are names and labels) with 4+ consecutive Latin words (numbers and other punctuation break a run, so `dim 64, lr 1e-4, batch 4` is config, not prose) and fewer than half as many Hangul syllables as Latin letters blocks the stop and asks for
 a Korean rewrite that does not mention the violation; English with a Korean ending appended is caught too.
 """
 import json
@@ -12,13 +12,13 @@ import sys
 
 HANGUL = re.compile(r"[가-힣]")
 LATIN = re.compile(r"[A-Za-z]")
-WORD = re.compile(r"[A-Za-z]{2,}")
-CODE = re.compile(r"```.*?```|`[^`\n]*`|[^\s`]*/[^\s`]*", re.S)
+RUN = re.compile(r"\b[A-Za-z]{2,}(?:[ ,]+[A-Za-z]{2,}){3}\b")
+CODE = re.compile(r"```.*?```|`[^`\n]*`|\"[^\"\n]*\"|[^\s`]*/[^\s`]*", re.S)
 
 
 def is_english(text):
     return any(
-        len(WORD.findall(line)) >= 4 and len(HANGUL.findall(line)) * 2 < len(LATIN.findall(line))
+        RUN.search(line) and len(HANGUL.findall(line)) * 2 < len(LATIN.findall(line))
         for line in CODE.sub("", text).splitlines()
         if not line.lstrip().startswith("|")
     )

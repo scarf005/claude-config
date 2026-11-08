@@ -56,6 +56,12 @@ class IsEnglish(unittest.TestCase):
     def test_korean_reply_with_many_identifiers_is_korean(self):
         self.assertFalse(is_english("`foo_bar`, `baz_qux`, `parse_mo`, `validate` 함수를 고쳤다요."))
 
+    def test_korean_line_with_config_values_is_korean(self):
+        self.assertFalse(is_english("3. 학습: dim 64 / alpha 32, lr 1e-4, batch 4, 12 epoch, 3 epoch마다 저장해요."))
+
+    def test_korean_line_quoting_english_ui_label_is_korean(self):
+        self.assertFalse(is_english('  - fork PR에서 "Allow edits by maintainers"가 꺼져 있으면 경고해요.'))
+
 
 class Main(unittest.TestCase):
     def test_blocks_last_assistant_message_missing_from_transcript(self):
