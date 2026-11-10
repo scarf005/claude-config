@@ -128,6 +128,11 @@
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/private_profile.py\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/cmake_preset.py\"",
+            "timeout": 5
           }
         ]
       }

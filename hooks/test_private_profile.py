@@ -47,5 +47,15 @@ class PrivateProfileTest(unittest.TestCase):
         self.assertIsNone(run_hook("gamescope", tool="Read"))
 
 
+class CmakePresetTest(unittest.TestCase):
+    def test_preset_configure_needs_absolute_compiler(self):
+        from cmake_preset import violation as preset_violation
+        self.assertIsNotNone(preset_violation("cmake --preset linux-full -DTILES=ON"))
+        self.assertIsNone(preset_violation(
+            "PATH=/usr/bin:$PATH cmake --preset linux-full -DCMAKE_C_COMPILER=/usr/bin/clang "
+            "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"))
+        self.assertIsNone(preset_violation("cmake --build --preset linux-full --target x"))
+
+
 if __name__ == "__main__":
     unittest.main()
