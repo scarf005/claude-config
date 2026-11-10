@@ -64,7 +64,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "sonnet",
   "skillOverrides": {
     "grill-me": "off"
   },
@@ -231,6 +230,7 @@
     },
     "filesystem": {
       "allowWrite": [
+        "/tmp",
         "~/repo",
         "~/.cache",
         "~/.cargo",
@@ -239,13 +239,13 @@
         "~/.local/state",
         "~/.gnupg"
       ],
+      "denyWrite": [
+        "~/.gnupg/private-keys-v1.d"
+      ],
       "denyRead": [
         "~/.aws",
         "~/.gnupg/private-keys-v1.d",
         "~/.gnupg/secring.gpg"
-      ],
-      "denyWrite": [
-        "~/.gnupg/private-keys-v1.d"
       ]
     },
     "excludedCommands": [
