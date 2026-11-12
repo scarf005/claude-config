@@ -151,6 +151,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/dirty_config.py\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PermissionRequest": [
