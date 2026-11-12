@@ -37,6 +37,11 @@ class DirtyConfigTest(unittest.TestCase):
             f.write("2\n")
         self.assertEqual(len(dirty_files(os.path.join(self.repo, "new.txt"), self.root)[1]), 1)
 
+    def test_unstaged_entry_keeps_full_path(self):
+        with open(self.file, "w") as f:
+            f.write("2\n")
+        self.assertEqual(dirty_files(self.file, self.root)[1][0][3:], "a.txt")
+
     def test_untracked_file_is_ignored(self):
         with open(os.path.join(self.repo, "u.txt"), "w") as f:
             f.write("x\n")
