@@ -5,3 +5,7 @@ audit:
 # run gitleaks on every commit
 install-hooks:
     prek install
+
+# patch the newest installed Claude Code now instead of waiting for the daily timer
+patch-claude:
+    systemctl --user start claude-patch.service
