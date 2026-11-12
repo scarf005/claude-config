@@ -17,6 +17,8 @@
 !hooks/sticker.py
 !hooks/test_sticker.py
 !hooks/catch_notests.py
+!hooks/pr_writing.py
+!hooks/test_pr_writing.py
 !hooks/test_catch_notests.py
 !commands/
 !commands/persona.md

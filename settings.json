@@ -144,6 +144,11 @@
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/catch_notests.py\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/pr_writing.py\"",
+            "timeout": 5
           }
         ]
       }
