@@ -15,7 +15,7 @@ GIT_ENV = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
 
 def git(repo, *args):
     done = subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, env=GIT_ENV)
-    return done.stdout.strip() if done.returncode == 0 else ""
+    return done.stdout.rstrip() if done.returncode == 0 else ""
 
 
 def dirty_files(path, root=CONFIG):
