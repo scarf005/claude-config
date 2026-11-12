@@ -42,10 +42,16 @@
       "Bash(find *-delete*)",
       "Bash(find *-exec rm*)",
       "Bash(git clean:*)",
-      "Bash(git push * --force*)",
-      "Bash(git push * -f*)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
+      "Bash(git push * --force* *main*)",
+      "Bash(git push * --force* *master*)",
+      "Bash(git push * -f * *main*)",
+      "Bash(git push * -f * *master*)",
+      "Bash(git push --force* *main*)",
+      "Bash(git push --force* *master*)",
+      "Bash(git push -f * *main*)",
+      "Bash(git push -f * *master*)",
+      "Bash(git push * +*main*)",
+      "Bash(git push * +*master*)",
       "Bash(git reset --hard:*)",
       "Bash(grep:*)",
       "Bash(mkfs*)",
@@ -294,18 +300,18 @@
   "modelSettings": {
     "claude-opus-5-5": {
       "effortLevel": "medium",
-      "autoCompactWindow": 400000
+      "autoCompactWindow": 200000
     },
     "claude-sonnet-5-5": {
       "effortLevel": "medium",
-      "autoCompactWindow": 400000
+      "autoCompactWindow": 200000
     },
     "claude-haiku-5-5": {
       "autoCompactWindow": 160000
     },
-    "claude-fable-5-1": {
+    "claude-fable-5-2": {
       "effortLevel": "medium",
-      "autoCompactWindow": 400000
+      "autoCompactWindow": 300000
     }
   },
   "tui": "fullscreen",
