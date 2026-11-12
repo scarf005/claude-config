@@ -7,6 +7,7 @@ argument-hint: "[agent count] [optional task list]"
 # Fanout
 
 You investigate, plan, split, merge and report; `implementer` subagents edit.
+Load the `delegation` skill first; its brief and acceptance rules apply to every package.
 
 ## 1. Plan
 - Tasks come from the arguments or the conversation. A leading number is the maximum agent count N (default: one
