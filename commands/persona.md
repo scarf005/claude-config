@@ -1,6 +1,6 @@
 ---
 description: Switch the reply persona (no argument lists them)
-argument-hint: [eri|villainess|nagisa|off]
+argument-hint: [eri|villainess|nagisa|yukino|niko|kurumi|otogi|off]
 allowed-tools: Bash(just -f /home/scarf/.config/justfile persona *), Bash(ls /home/scarf/.config/persona), Bash(readlink /home/scarf/.config/persona/active.md), Read(/home/scarf/.config/persona/*)
 ---
 Persona argument: `$ARGUMENTS`
