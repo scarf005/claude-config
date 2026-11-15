@@ -21,8 +21,13 @@ def make_dir(persona="nagisa", index=True):
     return d
 
 
-def ctx(d):
-    return json.loads(inject(d))["hookSpecificOutput"]["additionalContext"]
+def session(d, persona, sid="sid"):
+    (d / "s").mkdir(exist_ok=True)
+    (d / "s" / sid).write_text(persona)
+
+
+def ctx(d, sid="sid"):
+    return json.loads(inject(d, d / "s", {"session_id": sid}))["hookSpecificOutput"]["additionalContext"]
 
 
 def sections(d):
@@ -42,9 +47,14 @@ class Inject(unittest.TestCase):
         self.assertTrue(all(l.split(": ")[1].startswith(PACK) for l in lines))
         self.assertIn("003.png", next(l for l in lines if l.startswith("- fail")))
 
-    def test_lists_the_packs_of_every_persona_with_an_index(self):
-        out = sections(make_dir())
-        self.assertEqual(set(out), {"nagisa", "eri"})
+    def test_lists_only_the_pack_of_the_active_persona(self):
+        self.assertEqual(set(sections(make_dir())), {"nagisa"})
+
+    def test_session_persona_wins_over_the_shared_link(self):
+        d = make_dir()
+        session(d, "eri")
+        out = sections(d)
+        self.assertEqual(set(out), {"eri"})
         self.assertTrue(all(l.split(": ")[1].startswith(OTHER) for l in out["eri"]))
 
     def test_picks_vary_between_prompts(self):
@@ -52,12 +62,12 @@ class Inject(unittest.TestCase):
         self.assertGreater(len({next(l for l in ctx(d).splitlines() if l.startswith("- success")) for _ in range(50)}), 1)
 
     def test_persona_without_index_injects_nothing(self):
-        self.assertEqual(inject(make_dir("off", index=False)), "")
+        self.assertEqual(inject(d := make_dir("off", index=False), d / "s", {}), "")
 
 
 class Check(unittest.TestCase):
     def run_check(self, text, **extra):
-        return check(make_dir(), {"last_assistant_message": text, **extra})
+        return check(d := make_dir(), d / "s", {"last_assistant_message": text, **extra})
 
     def test_reply_ending_with_a_pack_sticker_passes(self):
         self.assertEqual(self.run_check(f"끝이에요\n\n{PACK}/001.png"), "")
@@ -68,8 +78,8 @@ class Check(unittest.TestCase):
         self.assertIn(PACK, out["reason"])
         self.assertIn("only", out["reason"])
 
-    def test_sticker_of_another_persona_pack_passes_since_the_link_is_shared_by_sessions(self):
-        self.assertEqual(self.run_check(f"끝이에요\n\n{OTHER}/001.png"), "")
+    def test_sticker_of_another_persona_pack_blocks(self):
+        self.assertTrue(self.run_check(f"끝이에요\n\n{OTHER}/001.png"))
 
     def test_sticker_buried_above_the_tail_blocks(self):
         self.assertTrue(self.run_check(f"{PACK}/001.png\na\nb\nc"))
@@ -78,7 +88,7 @@ class Check(unittest.TestCase):
         self.assertEqual(self.run_check("끝이에요", stop_hook_active=True), "")
 
     def test_persona_without_index_never_blocks(self):
-        self.assertEqual(check(make_dir("off", index=False), {"last_assistant_message": "끝"}), "")
+        self.assertEqual(check(d := make_dir("off", index=False), d / "s", {"last_assistant_message": "끝"}), "")
 
 
 if __name__ == "__main__":

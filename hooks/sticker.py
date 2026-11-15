@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sticker hooks for the active persona (index: persona/stickers/<persona>.tsv, first line `dir<TAB>path`, then `file<TAB>moods<TAB>text`).
 
-`inject` (UserPromptSubmit) lists one random sticker per mood as context; `check` (Stop) blocks once when the reply does not end with a sticker path.
+`inject` (UserPromptSubmit) lists one random sticker per mood of the session's persona as context; `check` (Stop) blocks once when the reply does not end with a sticker path.
 """
 import json
 import random
@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 PERSONAS = Path.home() / ".config/persona"
+SESSIONS = Path.home() / ".local/state/persona-sessions"
 TAIL_LINES = 3
 
 
@@ -17,11 +18,12 @@ def parse(index):
     return head[1], [(f, m.split(), t) for f, m, t in rows]
 
 
-def load(persona_dir):
-    """Packs of every persona with an index when the active persona has one, since the active link is shared by all running sessions."""
-    if not (persona_dir / "stickers" / f"{(persona_dir / 'active.md').resolve().stem}.tsv").exists():
-        return None
-    return {i.stem: parse(i) for i in sorted((persona_dir / "stickers").glob("*.tsv"))}
+def load(persona_dir, sessions, session_id):
+    """Pack of the persona this session started with (`sessions/<session_id>`, written by random_persona.py); the active link is shared by all running sessions, so it is only the fallback."""
+    recorded = sessions / (session_id or "-")
+    name = recorded.read_text().strip() if recorded.exists() else (persona_dir / "active.md").resolve().stem
+    index = persona_dir / "stickers" / f"{name}.tsv"
+    return {name: parse(index)} if index.exists() else None
 
 
 def candidates(packs):
@@ -33,8 +35,8 @@ def candidates(packs):
     return "\n".join(out)
 
 
-def inject(persona_dir):
-    loaded = load(persona_dir)
+def inject(persona_dir, sessions, data):
+    loaded = load(persona_dir, sessions, data.get("session_id"))
     if not loaded:
         return ""
     return json.dumps({"hookSpecificOutput": {
@@ -43,8 +45,8 @@ def inject(persona_dir):
     }}, ensure_ascii=False)
 
 
-def check(persona_dir, data):
-    loaded = load(persona_dir)
+def check(persona_dir, sessions, data):
+    loaded = load(persona_dir, sessions, data.get("session_id"))
     if not loaded or data.get("stop_hook_active"):
         return ""
     tail = [l for l in (data.get("last_assistant_message") or "").splitlines() if l.strip()][-TAIL_LINES:]
@@ -58,6 +60,6 @@ def check(persona_dir, data):
 
 if __name__ == "__main__":
     mode = sys.argv[1]
-    out = inject(PERSONAS) if mode == "inject" else check(PERSONAS, json.load(sys.stdin))
+    out = (inject if mode == "inject" else check)(PERSONAS, SESSIONS, json.load(sys.stdin))
     if out:
         print(out)

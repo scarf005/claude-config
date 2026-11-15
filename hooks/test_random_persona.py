@@ -17,22 +17,27 @@ def make_dir(names):
 class RandomPersona(unittest.TestCase):
     def test_off_is_never_picked(self):
         d = make_dir(["eri", "nagisa", "off"])
-        self.assertTrue(all(json.loads(pick(d))["hookSpecificOutput"]["additionalContext"].find("voice of off") < 0 for _ in range(50)))
+        self.assertTrue(all(json.loads(pick(d, d / "s", "sid"))["hookSpecificOutput"]["additionalContext"].find("voice of off") < 0 for _ in range(50)))
 
     def test_active_link_points_at_the_pick_and_context_carries_its_text(self):
         d = make_dir(["eri", "off"])
-        out = json.loads(pick(d))["hookSpecificOutput"]
+        out = json.loads(pick(d, d / "s", "sid"))["hookSpecificOutput"]
         self.assertEqual(out["hookEventName"], "SessionStart")
         self.assertEqual((d / "active.md").readlink(), Path("eri.md"))
         self.assertIn("voice of eri", out["additionalContext"])
 
+    def test_session_record_names_the_pick(self):
+        d = make_dir(["eri", "off"])
+        pick(d, d / "s", "sid")
+        self.assertEqual((d / "s" / "sid").read_text(), "eri")
+
     def test_villainess_is_never_picked(self):
         d = make_dir(["eri", "nagisa", "villainess"])
-        self.assertTrue(all(json.loads(pick(d))["hookSpecificOutput"]["additionalContext"].find("voice of villainess") < 0 for _ in range(50)))
+        self.assertTrue(all(json.loads(pick(d, d / "s", "sid"))["hookSpecificOutput"]["additionalContext"].find("voice of villainess") < 0 for _ in range(50)))
 
     def test_every_candidate_can_be_picked(self):
         d = make_dir(["eri", "nagisa", "gina", "off"])
-        seen = {(d / "active.md").readlink().stem for _ in range(100) if pick(d)}
+        seen = {(d / "active.md").readlink().stem for _ in range(100) if pick(d, d / "s", "sid")}
         self.assertEqual(seen, {"eri", "nagisa", "gina"})
 
 
