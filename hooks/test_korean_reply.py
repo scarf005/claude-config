@@ -62,8 +62,11 @@ class IsEnglish(unittest.TestCase):
     def test_korean_line_quoting_english_ui_label_is_korean(self):
         self.assertFalse(is_english('  - fork PR에서 "Allow edits by maintainers"가 꺼져 있으면 경고해요.'))
 
-    def test_commit_list_with_english_subjects_is_korean(self):
-        self.assertFalse(is_english("**커밋**\n- `2dcbd58` docs: add an in-game screenshot to the README\n- `8b94df1` fix: render the preview as a close-up"))
+    def test_text_with_four_hangul_words_is_korean_despite_english_quote(self):
+        self.assertFalse(is_english("세션 답변에 이 문장이 있어요. Let me look at the previews side by side."))
+
+    def test_english_text_with_three_hangul_words_is_english(self):
+        self.assertTrue(is_english("Let me look at the previews side by side. 확인 해요 네"))
 
 
 class Main(unittest.TestCase):
