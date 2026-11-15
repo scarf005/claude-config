@@ -4,7 +4,8 @@
 A text with 4+ Hangul words counts as Korean. Otherwise checks every line of the text blocks of the final reply (the assistant entries after the last tool result; earlier mid-turn notes are already sent and a rewrite cannot undo them), plus the
 input's last_assistant_message, since the hook can run before the transcript has the last entry. A line (code spans, blocks, double-quoted spans and path/URL tokens
 removed; markdown table rows skipped, since their cells are names and labels) with 4+ consecutive Latin words (numbers and other punctuation break a run, so `dim 64, lr 1e-4, batch 4` is config, not prose) and fewer than half as many Hangul syllables as Latin letters blocks the stop and asks for
-a Korean rewrite that does not mention the violation; English with a Korean ending appended is caught too.
+a Korean rewrite that does not mention the violation. English with a Korean ending of 1 to 3 Hangul words is caught too.
+English with a Korean ending of 4+ Hangul words passes, because the whole text then counts as Korean.
 """
 import json
 import re
