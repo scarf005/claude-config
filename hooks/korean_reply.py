@@ -13,13 +13,14 @@ import sys
 HANGUL = re.compile(r"[가-힣]")
 LATIN = re.compile(r"[A-Za-z]")
 RUN = re.compile(r"\b[A-Za-z]{2,}(?:[ ,]+[A-Za-z]{2,}){3}\b")
+COMMIT = re.compile(r"^\s*[-*]\s*`[0-9a-f]{7,40}`")
 CODE = re.compile(r"```.*?```|`[^`\n]*`|\"[^\"\n]*\"|[^\s`]*/[^\s`]*", re.S)
 
 
 def is_english(text):
     return any(
         RUN.search(line) and len(HANGUL.findall(line)) * 2 < len(LATIN.findall(line))
-        for line in CODE.sub("", text).splitlines()
+        for line in CODE.sub("", "\n".join(l for l in text.splitlines() if not COMMIT.match(l))).splitlines()
         if not line.lstrip().startswith("|")
     )
 
