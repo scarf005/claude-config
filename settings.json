@@ -42,16 +42,6 @@
       "Bash(find *-delete*)",
       "Bash(find *-exec rm*)",
       "Bash(git clean:*)",
-      "Bash(git push * --force* *main*)",
-      "Bash(git push * --force* *master*)",
-      "Bash(git push * -f * *main*)",
-      "Bash(git push * -f * *master*)",
-      "Bash(git push --force* *main*)",
-      "Bash(git push --force* *master*)",
-      "Bash(git push -f * *main*)",
-      "Bash(git push -f * *master*)",
-      "Bash(git push * +*main*)",
-      "Bash(git push * +*master*)",
       "Bash(git reset --hard:*)",
       "Bash(grep:*)",
       "Bash(mkfs*)",
@@ -148,6 +138,11 @@
           {
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/pr_writing.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/force_push.py\"",
             "timeout": 5
           }
         ]
