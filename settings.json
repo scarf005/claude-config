@@ -70,7 +70,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
   "skillOverrides": {
     "grill-me": "off"
   },
@@ -303,7 +302,11 @@
       "systemctl *",
       "gamescope *",
       "gamescopectl *",
-      "playwright-cli *"
+      "playwright-cli *",
+      "git gtr *",
+      "git worktree *",
+      "git -C * gtr *",
+      "git -C * worktree *"
     ]
   },
   "spinnerTipsEnabled": false,
@@ -361,5 +364,6 @@
       "**Trusted repo**: /home/scarf/repo/etc/hypha (local checkout, no configured remotes)",
       "**Org-specific CLIs**: None configured — project uses godot, xvfb-run, ffmpeg routinely per usage evidence"
     ]
-  }
+  },
+  "model": "opus"
 }
