@@ -72,10 +72,12 @@ class Check(unittest.TestCase):
     def test_reply_ending_with_a_pack_sticker_passes(self):
         self.assertEqual(self.run_check(f"끝이에요\n\n{PACK}/001.png"), "")
 
-    def test_reply_without_sticker_blocks_with_candidates(self):
-        out = json.loads(self.run_check("끝이에요"))
+    def test_reply_without_sticker_blocks_with_index_path(self):
+        d = make_dir()
+        out = json.loads(check(d, d / "s", {"last_assistant_message": "끝이에요"}))
         self.assertEqual(out["decision"], "block")
-        self.assertIn(PACK, out["reason"])
+        self.assertIn(f"{d}/stickers/nagisa.tsv", out["reason"])
+        self.assertNotIn("001.png", out["reason"])
         self.assertIn("only", out["reason"])
 
     def test_sticker_of_another_persona_pack_blocks(self):
