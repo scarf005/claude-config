@@ -54,7 +54,7 @@ def check(persona_dir, sessions, data):
         return ""
     return json.dumps({
         "decision": "block",
-        "reason": "Reply with only 1-3 sticker paths, one per line, picked by mood from the candidates of the persona whose voice you use. Write no other text, no acknowledgement and no mention of this check:\n" + candidates(loaded),
+        "reason": "Read the sticker index " + ", ".join(f"{persona_dir}/stickers/{n}.tsv" for n in loaded) + " (first line `dir<TAB>path`, then `file<TAB>moods<TAB>text`; sticker path = path/file), then reply with only 1-3 sticker paths, one per line, picked by mood. Write no other text, no acknowledgement and no mention of this check.",
     }, ensure_ascii=False)
 
 
