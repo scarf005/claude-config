@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sticker hooks for the active persona (index: persona/stickers/<persona>.tsv, first line `dir<TAB>path`, then `file<TAB>moods<TAB>text`).
 
-`inject` (UserPromptSubmit) lists one random sticker per mood of the session's persona as context; `check` (Stop) blocks once when the reply does not end with a sticker path.
+`inject` (UserPromptSubmit) lists one random sticker per mood of the session's persona as context; `check` (Stop) blocks once, pointing at the index file, when the reply does not end with a sticker path.
 """
 import json
 import random
