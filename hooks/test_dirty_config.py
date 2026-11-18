@@ -76,6 +76,22 @@ class DirtyConfigTest(unittest.TestCase):
             f.write("3\n")
         self.assertEqual(self.foreign("s"), ["a.txt"])
 
+    def test_deleted_file_blocks(self):
+        """Someone deletes tracked a.txt: session "s" must commit the deletion first."""
+        os.remove(self.file)
+        self.assertEqual(self.foreign("s"), ["a.txt"])
+
+    def test_quoted_path_blocks(self):
+        """Someone changes tracked "b c.txt": the name comes back without porcelain quotes."""
+        path = os.path.join(self.repo, "b c.txt")
+        with open(path, "w") as f:
+            f.write("1\n")
+        run(self.repo, "add", "b c.txt")
+        run(self.repo, "commit", "-q", "-m", "b")
+        with open(path, "w") as f:
+            f.write("2\n")
+        self.assertEqual(self.foreign("s"), ["b c.txt"])
+
 
 if __name__ == "__main__":
     unittest.main()
