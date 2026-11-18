@@ -12,6 +12,7 @@ class StackedMergeTest(unittest.TestCase):
         lookup = stack(**{"o/r:10905": ["10915"]})
         self.assertEqual(violation("gh pr merge 10905 -R o/r --rebase", lookup), ("10905", ["10915"]))
         self.assertIsNotNone(violation("gh pr merge -R o/r --rebase 10905 --match-head-commit abc", lookup))
+        self.assertIsNotNone(violation("gh pr merge -R o/r --match-head-commit 1234567 10905", lookup))
 
     def test_merge_without_dependents_is_allowed(self):
         lookup = stack(**{"o/r:10905": ["10915"]})
