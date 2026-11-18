@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: deny Edit/Write under ~/.config while the target's git repo has uncommitted tracked changes.
+"""Edit/Write hook: deny edits under ~/.config while the target's git repo has uncommitted tracked changes.
 
 Existing changes are user-owned and must be committed as their own checkpoint before new edits, so the new
 change stays a separate commit. Untracked files and submodule state are ignored.
+
+PostToolUse records a hash of each file the session wrote. PreToolUse treats a changed file as the session's own
+while its content still matches that hash, so a session can edit one file several times in a row.
 """
+import hashlib
 import json
 import os
 import subprocess
 import sys
 
 CONFIG = os.path.expanduser("~/.config")
+STATE = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "claude-dirty-config")
 GIT_ENV = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
 
 
@@ -30,17 +35,56 @@ def dirty_files(path, root=CONFIG):
     return repo, status.splitlines()
 
 
+def digest(path):
+    try:
+        with open(path, "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except OSError:
+        return None
+
+
+def load(session, state_dir):
+    try:
+        with open(os.path.join(state_dir, f"{session}.json")) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def record_edit(path, session, state_dir=STATE):
+    """Remember the content `session` left in `path`."""
+    owned = load(session, state_dir) | {os.path.realpath(path): digest(path)}
+    os.makedirs(state_dir, exist_ok=True)
+    with open(os.path.join(state_dir, f"{session}.json"), "w") as f:
+        json.dump(owned, f)
+
+
+def foreign_files(path, session, root=CONFIG, state_dir=STATE):
+    """Return changed files in the repo of `path` whose content `session` did not write."""
+    found = dirty_files(path, root)
+    if found is None:
+        return []
+    repo, files = found
+    owned = load(session, state_dir)
+    rels = [f[3:] for f in files]
+    return [r for r in rels if owned.get(os.path.join(repo, r)) != digest(os.path.join(repo, r))]
+
+
 def main():
     data = json.load(sys.stdin)
     path = data.get("tool_input", {}).get("file_path") or data.get("tool_input", {}).get("notebook_path")
-    if not path:
+    session = data.get("session_id", "")
+    if not path or not session:
         return
-    found = dirty_files(path)
-    if found is None or not found[1]:
+    if data.get("hook_event_name") == "PostToolUse":
+        if dirty_files(path) is not None:
+            record_edit(path, session)
         return
-    repo, files = found
+    foreign = foreign_files(path, session)
+    if not foreign:
+        return
     reason = (
-        f"{repo} has uncommitted changes ({', '.join(f[3:] for f in files[:5])}). They are user-owned: "
+        f"{dirty_files(path)[0]} has uncommitted changes ({', '.join(foreign[:5])}). They are user-owned: "
         "commit them first as a separate checkpoint commit (`git add <those paths>`, then commit), then retry the edit."
     )
     print(json.dumps({
