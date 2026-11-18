@@ -22,5 +22,7 @@
 !hooks/dirty_config.py
 !hooks/test_dirty_config.py
 !hooks/test_catch_notests.py
+!hooks/unstacked_pr.py
+!hooks/test_unstacked_pr.py
 !commands/
 !commands/persona.md

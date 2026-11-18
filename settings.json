@@ -112,6 +112,11 @@
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/sticker.py\" check",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/unstacked_pr.py\"",
+            "timeout": 25
           }
         ]
       }
