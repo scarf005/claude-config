@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 import unittest
 
-from dirty_config import dirty_files
+from dirty_config import dirty_files, foreign_files, record_edit
 
 
 def run(repo, *args):
@@ -49,6 +49,32 @@ class DirtyConfigTest(unittest.TestCase):
 
     def test_path_outside_root_is_ignored(self):
         self.assertIsNone(dirty_files("/etc/hostname", self.root))
+
+    def edit(self, session, text):
+        """Write `text` to a.txt as `session` did with Edit, and record it like the PostToolUse hook."""
+        with open(self.file, "w") as f:
+            f.write(text)
+        record_edit(self.file, session, os.path.join(self.root, "state"))
+
+    def foreign(self, session):
+        return foreign_files(self.file, session, self.root, os.path.join(self.root, "state"))
+
+    def test_session_may_edit_again_after_its_own_edit(self):
+        """Session "s" changes a.txt to "2": its next edit of a.txt is allowed."""
+        self.edit("s", "2\n")
+        self.assertEqual(self.foreign("s"), [])
+
+    def test_other_session_change_still_blocks(self):
+        """Session "s" leaves a.txt changed: session "t" must commit a.txt first."""
+        self.edit("s", "2\n")
+        self.assertEqual(self.foreign("t"), ["a.txt"])
+
+    def test_outside_change_after_own_edit_blocks(self):
+        """Session "s" writes "2", then someone writes "3": "s" must commit a.txt first."""
+        self.edit("s", "2\n")
+        with open(self.file, "w") as f:
+            f.write("3\n")
+        self.assertEqual(self.foreign("s"), ["a.txt"])
 
 
 if __name__ == "__main__":
