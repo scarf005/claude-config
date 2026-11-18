@@ -11,11 +11,15 @@ import sys
 
 MERGE = re.compile(r"\bgh\s+pr\s+merge\b(.*)")
 REPO = re.compile(r"(?:-R|--repo)[\s=](\S+)")
-NUMBER = re.compile(r"(?:^|\s)#?(\d+)(?=\s|$)")
+VALUED = re.compile(r"(?<!\S)(?:-R|--repo|--match-head-commit|-t|--subject|-b|--body|-A|--author-email)[\s=]\S+")
+NUMBER = re.compile(r"(?:^|\s|/pull/)#?(\d+)(?=\s|$)")
 
 
 def gh(*args):
-    return subprocess.run(["gh", *args], capture_output=True, text=True, timeout=10).stdout.split()
+    try:
+        return subprocess.run(["gh", *args], capture_output=True, text=True, timeout=10).stdout.split()
+    except (subprocess.TimeoutExpired, OSError):
+        return []
 
 
 def dependents(pr, repo):
@@ -31,7 +35,7 @@ def violation(command, lookup=dependents):
         m = MERGE.search(part)
         if not m:
             continue
-        args = REPO.sub(" ", m.group(1))
+        args = VALUED.sub(" ", m.group(1))
         pr = NUMBER.search(args)
         repo = REPO.search(m.group(1))
         if pr and (found := lookup(pr.group(1), repo and repo.group(1))):

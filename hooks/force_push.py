@@ -11,7 +11,7 @@ import sys
 
 PUSH = re.compile(r"\bgit\s+(?:-C\s+(\S+)\s+)?push\b(.*)")
 FORCE = re.compile(r"(?:^|\s)(?:-f|--force\S*|-\w*f\w*|\+\S+)(?=\s|$)")
-DEFAULT = re.compile(r"main|master")
+DEFAULT = re.compile(r"(?<![\w/.-])(?:refs/heads/)?(?:main|master)(?![\w/.-])")
 CD = re.compile(r"^\s*cd\s+(\S+)\s*$")
 
 
