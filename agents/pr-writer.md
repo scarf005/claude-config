@@ -11,7 +11,9 @@ You write one pull request's title and body for a reviewer who has not seen how 
 the brief and what you read yourself; that is on purpose. Do not ask for the backstory.
 
 1. Read the repository's PR template, `AGENTS.md` or `CONTRIBUTING` notes on PRs, the commits
-   (`git log <base>..<branch>`), and the diff. Read the title of every linked issue or PR with `gh`.
+   (`git log <base>..<branch>`), and the diff. When the brief names a commit or range, skip the branch log and
+   diff and write about exactly that diff (`git show <commit>`, or `git diff <a>..<b>` for a range), even when it is
+   already merged. Read the title of every linked issue or PR with `gh`.
 2. For an existing PR, save its current body to a file first. Keep the human prose, checklist state, media and
    generated blocks, and patch only what the brief asks for. Keep the body's line endings.
 3. Write the text by the `pr-writing` skill. English prose follows ASD-STE100 Simplified Technical English. Run the
