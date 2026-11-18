@@ -31,8 +31,15 @@ def dirty_files(path, root=CONFIG):
     repo = git(os.path.dirname(real) if os.path.isdir(os.path.dirname(real)) else root, "rev-parse", "--show-toplevel")
     if not repo:
         return None
-    status = git(repo, "status", "--porcelain", "--untracked-files=no", "--ignore-submodules=all")
-    return repo, status.splitlines()
+    tokens = git(repo, "status", "--porcelain", "-z", "--untracked-files=no", "--ignore-submodules=all").split("\0")
+    entries = []
+    while tokens:
+        entry = tokens.pop(0)
+        if entry:
+            entries.append(entry)
+            if entry[0] in "RC":
+                tokens.pop(0)  # -z puts a rename's old path in the next token
+    return repo, entries
 
 
 def digest(path):
@@ -67,7 +74,11 @@ def foreign_files(path, session, root=CONFIG, state_dir=STATE):
     repo, files = found
     owned = load(session, state_dir)
     rels = [f[3:] for f in files]
-    return [r for r in rels if owned.get(os.path.join(repo, r)) != digest(os.path.join(repo, r))]
+    def own(rel):
+        real = os.path.realpath(os.path.join(repo, rel))
+        return real in owned and owned[real] == digest(real)
+
+    return [r for r in rels if not own(r)]
 
 
 def main():
