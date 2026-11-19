@@ -24,5 +24,7 @@
 !hooks/test_catch_notests.py
 !hooks/unstacked_pr.py
 !hooks/test_unstacked_pr.py
+!hooks/local_bench.py
+!hooks/test_local_bench.py
 !commands/
 !commands/persona.md
