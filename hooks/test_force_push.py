@@ -1,6 +1,6 @@
 import unittest
 
-from force_push import violation
+from force_push import reviewed, violation
 
 
 def only(*repos):
@@ -24,6 +24,20 @@ class ForcePushTest(unittest.TestCase):
         self.assertIsNone(violation("git push origin main", "/r", only()))
         self.assertIsNone(violation("git push --force-with-lease origin feat/x", "/r", only()))
         self.assertIsNone(violation("git push -f origin feat/maintenance fix/main-menu", "/r", only()))
+
+
+    def test_force_push_to_reviewed_pr_branch_is_denied(self):
+        lookup = lambda repo, remote, branch: {"feat/x": ["rev"], "feat/down": None}.get(branch, [])
+        self.assertEqual(reviewed("git push -f upstream feat/x", "/r", lookup), ("feat/x", ["rev"]))
+        self.assertEqual(reviewed("git push --force-with-lease=feat/x:abc upstream tmp:feat/x", "/r", lookup),
+                         ("feat/x", ["rev"]))
+        self.assertEqual(reviewed("git push -f upstream +feat/down", "/r", lookup), ("feat/down", None))
+
+    def test_unreviewed_plain_or_approved_force_push_is_allowed(self):
+        lookup = lambda repo, remote, branch: ["rev"] if branch == "feat/x" else []
+        self.assertIsNone(reviewed("git push -f upstream feat/y", "/r", lookup))
+        self.assertIsNone(reviewed("git push upstream feat/x", "/r", lookup))
+        self.assertIsNone(reviewed("CLAUDE_REVIEWED_PUSH_OK=1 git push -f upstream feat/x", "/r", lookup))
 
 
 if __name__ == "__main__":
