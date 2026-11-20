@@ -164,6 +164,11 @@
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/stacked_merge.py\"",
             "timeout": 25
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/stack_size.py\"",
+            "timeout": 5
           }
         ]
       },
