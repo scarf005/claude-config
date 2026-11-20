@@ -157,6 +157,11 @@
           },
           {
             "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/amend_author.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/android_dump.py\"",
             "timeout": 5
           },
