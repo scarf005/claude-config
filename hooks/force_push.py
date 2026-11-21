@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """PreToolUse hook: deny a force-push to a default branch (main, master), or to a branch whose open PR has reviews.
 
-A repository allows default-branch force-push with `git config claude.forcePushDefaultBranch true`.
+A repository allows default-branch force-push with `git config claude.forcePushDefaultBranch true`, or only to
+one remote repository with `git config claude.forcePushDefaultBranch OWNER/REPO`.
 A force-push that dismisses reviews needs the user's approval, then `CLAUDE_REVIEWED_PUSH_OK=1` in the command.
 The repository is the `git -C` path, else a leading `cd PATH`, else the session's working directory.
 """
@@ -16,10 +17,10 @@ DEFAULT = re.compile(r"(?<![\w/.-])(?:refs/heads/)?(?:main|master)(?![\w/.-])")
 CD = re.compile(r"^\s*cd\s+(\S+)\s*$")
 
 
-def allowed(repo):
-    out = subprocess.run(["git", "-C", repo, "config", "--get", "--bool", "claude.forcePushDefaultBranch"],
-                         capture_output=True, text=True)
-    return out.stdout.strip() == "true"
+def allowed(repo, remote):
+    out = subprocess.run(["git", "-C", repo, "config", "--get", "claude.forcePushDefaultBranch"],
+                         capture_output=True, text=True).stdout.strip()
+    return out.lower() in ("true", "yes", "on", "1") or (bool(out) and out == remote_slug(repo, remote))
 
 
 def remote_slug(repo, remote):
@@ -74,7 +75,8 @@ def violation(command, cwd, allow=allowed):
             repo = m.group(1)
             continue
         m = PUSH.search(part)
-        if m and FORCE.search(m.group(2)) and DEFAULT.search(m.group(2)) and not allow(m.group(1) or repo):
+        if m and FORCE.search(m.group(2)) and DEFAULT.search(m.group(2)) and \
+                not allow(m.group(1) or repo, destinations(m.group(2))[0]):
             return part.strip()
     return None
 
@@ -101,7 +103,7 @@ def main():
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
         "permissionDecisionReason": f"Force-push to a default branch is denied here ({part[:200]}). "
-                                    "A repository allows it with `git config claude.forcePushDefaultBranch true`.",
+                                    "A repository allows it with `git config claude.forcePushDefaultBranch true` (or OWNER/REPO for one remote).",
     }}))
 
 

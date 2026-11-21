@@ -4,7 +4,7 @@ from force_push import reviewed, violation
 
 
 def only(*repos):
-    return lambda repo: repo in repos
+    return lambda repo, remote: repo in repos
 
 
 class ForcePushTest(unittest.TestCase):
@@ -19,6 +19,11 @@ class ForcePushTest(unittest.TestCase):
         self.assertIsNone(violation("cd /r && git push -f origin main", "/x", only("/r")))
         self.assertIsNone(violation("git -C /r push -f origin main", "/x", only("/r")))
         self.assertIsNotNone(violation("cd /x && git push -f origin main", "/r", only("/r")))
+
+    def test_opt_in_for_one_remote_allows_only_that_remote(self):
+        fork = lambda repo, remote: remote == "origin"
+        self.assertIsNone(violation("git push -f origin main", "/r", fork))
+        self.assertIsNotNone(violation("git push -f upstream main", "/r", fork))
 
     def test_plain_push_and_feature_branch_force_are_allowed(self):
         self.assertIsNone(violation("git push origin main", "/r", only()))
