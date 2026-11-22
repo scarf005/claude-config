@@ -1,10 +1,28 @@
+import os
 import tempfile
 import unittest
 
-from pr_writing import brief_problem, deny_reason, skill_loaded, writes_body, writes_pr
+from pr_writing import brief_problem, ticked_issue_box_without_issue, deny_reason, skill_loaded, writes_body, writes_pr
 
 
 class PrWritingTest(unittest.TestCase):
+    def test_ticked_issue_box_needs_an_issue_link(self):
+        """A ticked "I linked any relevant issues" box is wrong without `#N` or an issue URL in the body."""
+        box = "- [x] I linked any relevant issues using [syntax](https://x/#notes) like `closes #1234` in Summary.\n"
+        self.assertTrue(ticked_issue_box_without_issue("Why: tests fail.\n" + box))
+        self.assertFalse(ticked_issue_box_without_issue("fixes #10\n" + box))
+        self.assertFalse(ticked_issue_box_without_issue("see https://github.com/o/r/issues/7\n" + box))
+        self.assertFalse(ticked_issue_box_without_issue("Why: tests fail.\n" + box.replace("[x]", "[ ]")))
+
+    def test_pr_writer_body_file_with_ticked_box_is_denied(self):
+        """`pr-writer` running `gh pr edit 5 --body-file b.md` is denied when b.md ticks the box without an issue."""
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as f:
+            f.write("Why: tests fail.\n- [x] I linked any relevant issues like `closes #1234`.\n")
+        self.addCleanup(os.unlink, f.name)
+        command = "gh pr edit 5 --body-file " + f.name
+        data = {"tool_name": "Bash", "agent_type": "pr-writer", "tool_input": {"command": command}}
+        self.assertIn("linked-issue checkbox", deny_reason(data))
+
     def test_pr_create_and_edit_are_writes(self):
         self.assertTrue(writes_body("gh pr create --fill"))
         self.assertTrue(writes_body("gh pr edit 12 --body-file b.md"))

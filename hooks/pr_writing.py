@@ -28,6 +28,8 @@ PR_WRITE = re.compile(
 LOADED = re.compile(r'"skill"\s*:\s*"pr-writing"')
 WRITER = "pr-writer"
 BRIEF_LIMIT = 600
+TICKED_ISSUE_BOX = re.compile(r"^\s*- \[[xX]\] I linked any relevant issues.*$", re.M)
+ISSUE_REF = re.compile(r"(?:^|[\s(])#\d+\b|/(?:issues|pull)/\d+")
 
 
 def segments(command):
@@ -65,6 +67,39 @@ def skill_loaded(transcript_path):
         return False
 
 
+def body_files(command):
+    """Return the `--body-file`/`-F` paths of PR writes in a command."""
+    paths = []
+    for segment in segments(command):
+        if not PR_WRITE.search(segment):
+            continue
+        tokens = shlex.split(segment)
+        for flag, value in zip(tokens, tokens[1:]):
+            if flag in ("--body-file", "-F") and not value.startswith(("title=", "body=")):
+                paths.append(value)
+    return paths
+
+
+def ticked_issue_box_without_issue(body):
+    """True when the body ticks the linked-issue checkbox but links no issue or PR."""
+    without_box = TICKED_ISSUE_BOX.sub("", body)
+    return TICKED_ISSUE_BOX.search(body) is not None and ISSUE_REF.search(without_box) is None
+
+
+def body_problem(command):
+    for path in body_files(command):
+        try:
+            with open(path, encoding="utf-8") as f:
+                body = f.read()
+        except OSError:
+            continue
+        if ticked_issue_box_without_issue(body):
+            return (
+                f"{path} ticks the linked-issue checkbox, but the body links no issue. Untick it or link the issue."
+            )
+    return None
+
+
 def brief_problem(tool_input):
     """Return a deny reason for an over-long `pr-writer` brief, else None."""
     if tool_input.get("subagent_type") != WRITER or len(tool_input.get("prompt", "")) <= BRIEF_LIMIT:
@@ -84,7 +119,7 @@ def deny_reason(data):
     command = tool_input.get("command", "")
     if writes_pr(command):
         if data.get("agent_type") == WRITER:
-            return None
+            return body_problem(command)
         return (
             f"Write PR titles and bodies only through the `{WRITER}` agent: Agent with subagent_type `{WRITER}` and a "
             f"brief within {BRIEF_LIMIT} characters. Do not reach the same effect through another command."
