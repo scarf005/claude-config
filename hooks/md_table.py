@@ -74,7 +74,7 @@ def violation(command, read=lambda p: open(p, encoding="utf-8").read()):
         try:
             texts.append(read(path))
         except OSError:
-            pass
+            return f"Cannot read message file {path!r}; pass a literal absolute path so its tables can be checked."
     for text in texts:
         problem = table_problem(text)
         if problem is not None:

@@ -23,6 +23,12 @@ class MdTableTest(unittest.TestCase):
         self.assertIsNotNone(violation("git commit --amend -F /tmp/m.txt", read=lambda _: UNALIGNED))
         self.assertIsNotNone(violation("gh pr edit 1 --body-file=b.md", read=lambda _: UNALIGNED))
 
+    def test_unreadable_body_file_is_denied(self):
+        """`--body-file $S/b.md` names a path the hook cannot open, so its tables would go unchecked."""
+        def missing(_):
+            raise FileNotFoundError
+        self.assertIn("literal", violation("gh pr edit 1 -R o/r --body-file $S/b.md", read=missing))
+
     def test_aligned_table_is_allowed(self):
         self.assertIsNone(violation(f"git commit -F - <<'EOF'\nperf: x\n\n{ALIGNED}EOF"))
         self.assertIsNone(violation("git commit -F m.txt", read=lambda _: ALIGNED))
