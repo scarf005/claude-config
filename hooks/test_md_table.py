@@ -4,6 +4,11 @@ from md_table import violation
 
 UNALIGNED = "| Renderer | Before | After |\n|---|---|---|\n| software | 0.797 s | 0.657 s |\n"
 ALIGNED = (
+    "| Renderer | Before  | After   | Speedup      |\n"
+    "| -------- | ------- | ------- | ------------ |\n"
+    "| software | 0.797 s | 0.657 s | 1.21x (-18%) |\n"
+)
+NO_SPEEDUP = (
     "| Renderer | Before  | After   |\n"
     "| -------- | ------- | ------- |\n"
     "| software | 0.797 s | 0.657 s |\n"
@@ -21,6 +26,9 @@ class MdTableTest(unittest.TestCase):
     def test_aligned_table_is_allowed(self):
         self.assertIsNone(violation(f"git commit -F - <<'EOF'\nperf: x\n\n{ALIGNED}EOF"))
         self.assertIsNone(violation("git commit -F m.txt", read=lambda _: ALIGNED))
+
+    def test_before_after_table_without_speedup_is_denied(self):
+        self.assertIn("speedup", violation("git commit -F m.txt", read=lambda _: NO_SPEEDUP))
 
     def test_wide_characters_count_as_two_columns(self):
         table = "| 렌더러 | 값 |\n| ------ | -- |\n| sw     | 1  |\n"

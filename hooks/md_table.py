@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: deny commit, PR and issue text whose Markdown tables do not line up as plain text.
+"""PreToolUse hook: deny commit, PR and issue text with Markdown tables that are hard to read.
 
 `git log` shows commit bodies raw, so table columns must be padded (`deno fmt --ext md -` does it).
+A table with Before and After columns must also show the speedup (`3.08x (-68%)`).
 Checks the command text (`-m`, heredocs) and files passed with `-F`/`--file`/`--body-file`.
 """
 import json
@@ -13,6 +14,7 @@ import unicodedata
 TARGET = re.compile(r"\bgit\b[^|;&\n]*\bcommit\b|\bgh\s+(?:pr|issue)\s+(?:create|edit|comment)\b")
 FILE_FLAGS = {"-F", "--file", "--body-file"}
 ROW = re.compile(r"^\s*\|.*\|\s*$")
+SPEEDUP = re.compile(r"speedup|faster|ratio|change")
 
 
 def width(text):
@@ -30,8 +32,8 @@ def pipe_columns(line):
     return cols
 
 
-def unaligned_table(text):
-    """First row of a table block whose pipes are not at the same columns as the block's first row."""
+def table_problem(text):
+    """Why the first hard-to-read table block in `text` is hard to read, or None."""
     block = []
     for line in text.splitlines() + [""]:
         if ROW.match(line):
@@ -41,7 +43,10 @@ def unaligned_table(text):
             first = pipe_columns(block[0])
             for row in block[1:]:
                 if pipe_columns(row) != first:
-                    return row.strip()
+                    return f"Table columns do not line up; pad them with `deno fmt --ext md -`. Row: {row.strip()[:200]}"
+            header = {c.strip().lower() for c in block[0].strip().strip("|").split("|")}
+            if {"before", "after"} <= header and not any(SPEEDUP.search(c) for c in header):
+                return f"Before/After table has no speedup column; add one such as `3.08x (-68%)`. Header: {block[0].strip()[:200]}"
         block = []
     return None
 
@@ -71,9 +76,9 @@ def violation(command, read=lambda p: open(p, encoding="utf-8").read()):
         except OSError:
             pass
     for text in texts:
-        row = unaligned_table(text)
-        if row is not None:
-            return row
+        problem = table_problem(text)
+        if problem is not None:
+            return problem
     return None
 
 
@@ -81,13 +86,9 @@ def main():
     data = json.load(sys.stdin)
     if data.get("tool_name") != "Bash":
         return
-    row = violation(data.get("tool_input", {}).get("command", ""))
-    if row is None:
+    reason = violation(data.get("tool_input", {}).get("command", ""))
+    if reason is None:
         return
-    reason = (
-        "Markdown table columns do not line up, so `git log` shows them unreadable. Pad every column "
-        f"(pipe the message through `deno fmt --ext md -`). Unaligned row: {row[:200]}"
-    )
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
