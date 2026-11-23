@@ -6,17 +6,44 @@ CLAUDE_MSG_ONLY_REWRITE=1.
 """
 import json
 import re
+import shlex
 import sys
 
 BYPASS = re.compile(r"\bgit\b[^|;&\n]*?(?:\s--no-verify\b|\s-c\s*core\.hooksPath\b)", re.IGNORECASE)
 APPROVED = re.compile(r"\bCLAUDE_MSG_ONLY_REWRITE=1\b")
+ARG_FLAGS = set("mFCct")
+
+
+def short_n_commit(command):
+    """`git commit` short flags that include `-n`, skipping option values such as the `-m` message."""
+    for line in command.splitlines():
+        try:
+            words = shlex.split(line)
+        except ValueError:
+            continue
+        if "commit" not in words or "git" not in words[:words.index("commit")]:
+            continue
+        skip = False
+        for word in words[words.index("commit") + 1:]:
+            if word in ("|", "||", "&&", ";"):
+                break
+            if skip or not re.fullmatch(r"-[A-Za-z]+", word):
+                skip = False
+                continue
+            for c in word[1:]:
+                if c == "n":
+                    return word
+                if c in ARG_FLAGS:
+                    skip = word.endswith(c)
+                    break
+    return None
 
 
 def violation(command):
     if APPROVED.search(command):
         return None
     m = BYPASS.search(command)
-    return m.group(0) if m else None
+    return m.group(0) if m else short_n_commit(command)
 
 
 def main():

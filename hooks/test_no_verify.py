@@ -12,6 +12,7 @@ class NoVerifyTest(unittest.TestCase):
         self.assertIsNotNone(violation("git commit -n -m x"))
         self.assertIsNotNone(violation("git commit -an -m x"))
         self.assertIsNone(violation("git commit -am x"))
+        self.assertIsNone(violation('git commit -m "deny git commit -n"'))
 
     def test_hooks_path_override_is_denied(self):
         self.assertIsNotNone(violation("git -c core.hooksPath=/dev/null commit -m x"))
