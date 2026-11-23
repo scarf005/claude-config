@@ -36,6 +36,9 @@ targets. Embedded mode: final text only. Code-text mode: change only names, stri
 - Bug reports: symptom and related link first, then repro, environment, logs. Performance PRs and commits: before/after
   table with a speedup column (`3.08x (-68%)`). Images committed to a repository: WebP quality 50-75.
 ## Patterns
+Before a full rewrite, read `references/patterns.md`: complete word and phrase lists (chatbot residue, knowledge-limit
+disclaimers, qualifiers, AI words with their technical-use carve-outs), voice rules without a sample, why tells count,
+and before/after examples.
 1. Not X but Y (also "not just", "rather than", split over two sentences, ", no guessing"): state the point; keep a contrast when both halves carry facts. 2. One-
 line closers and fragments ("That is the real win."): cut unless they add a fact. 3. Sayings that sound deep (the real
 question is, at its core). 4. Staged run-up (let's dive in, here's the thing, Honestly?). 5. Arguing with no one (I'm
@@ -56,4 +59,4 @@ name input, action, result. 30. Edit history in code text (now uses, no longer):
 checkable result (handles X correctly, gracefully, `should` in test names, intentionally, Note:): state the result.
 32. Coined names (the fast path, the gate, the guard, the oracle, the lane).
 Leave quotations, titles, proper names, salutations, text before 2022-11-30 alone. Keep odd details, mixed feelings, asides.
-No dropped subjects, synonym cycling, added jokes or anecdotes, renamed identifiers.
+No dropped subjects, synonym cycling (repeat the right word), added jokes or anecdotes, renamed identifiers.

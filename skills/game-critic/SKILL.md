@@ -4,8 +4,8 @@ description: Review a game level, encounter or screen the way a professional gam
 ---
 # Game critic
 
-Judge from what the player sees, never from code alone. Only a captured frame or a played second proves a problem
-exists or is gone.
+Judge from what the player sees, never from code alone. Code explains a problem; only a captured frame or a played
+second proves it exists or is gone.
 
 ## Method
 
@@ -25,19 +25,20 @@ exists or is gone.
 - Reveal and staging: threats enter from a believable place (horizon, landmark, haze, doorway), never pop into open
   space; time to read, act, be hit; a visible telegraph.
 - Distance and scale: range suits weapon and screen; check apparent pixel size at the real fight range.
-- Pacing: build, peak, release; an earned quiet stretch; the peak is the loudest, densest moment. Compare section
+- Pacing: build, peak, release; an earned quiet stretch; the peak is the loudest, densest, best-composed moment. Compare section
   lengths and enemy counts.
 - Composition and readability: three depth layers; value contrast separates enemies and pickups from terrain; distinct
   silhouette per role; a landmark or leading line; no long flat same-coloured areas.
-- Place and identity: each section looks and sounds different, has one landmark, tells part of the story.
+- Place and identity: each section looks and sounds different, has one landmark, tells part of the story; a place,
+  not a corridor with props.
 - Verticality and terrain: height variation, cover, elevation changes, occlusion that creates choices.
 - Game feel: hit feedback, impacts, camera response, audio cues; player power reads on screen.
 - Traversal and collision: sweep the body across the whole playable width at many positions (not by reading code) and
   compare stops with what is drawn; every block is a visible object; a rule that moves the player without input is
   S1. Sweep height too: at edges, section boundaries and arena corners the body neither sinks nor tilts off the floor;
   floor extents cover every sample the body takes, not only its centre.
-- Threat uptime: with the player moving at real speed, log each enemy kind's shots per ten seconds and seconds to first
-  contact; a hunter firing under once per ten seconds, or stuck in a state loop (reposition, cover, band edge), is
+- Threat uptime: with the player moving at real speed and not killing it, log each enemy kind's shots per ten seconds
+  from arrival to death and seconds to first contact; a hunter firing under once per ten seconds, or stuck in a state loop (reposition, cover, band edge), is
   S1. Station keeping must hold while the target moves.
 - Fairness: deaths explainable from the frame; damage sources visible; no off-screen or through-wall hits; recovery
   resources arrive when the curve needs them.
