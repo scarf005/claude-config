@@ -180,6 +180,11 @@
           },
           {
             "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/commit_gate.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/android_dump.py\"",
             "timeout": 5
           },
