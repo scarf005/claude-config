@@ -1,4 +1,8 @@
+import os
+import subprocess
+import tempfile
 import unittest
+from unittest import mock
 
 from force_push import reviewed, violation
 
@@ -24,6 +28,14 @@ class ForcePushTest(unittest.TestCase):
         fork = lambda repo, remote: remote == "origin"
         self.assertIsNone(violation("git push -f origin main", "/r", fork))
         self.assertIsNotNone(violation("git push -f upstream main", "/r", fork))
+
+    def test_one_remote_opt_in_denies_push_without_remote(self):
+        """`claude.forcePushDefaultBranch o/r` with `git push --force-with-lease=main` (no remote): deny, not crash."""
+        env = {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1"}
+        with tempfile.TemporaryDirectory() as d, mock.patch.dict(os.environ, env):
+            subprocess.run(["git", "init", "-q", d], check=True)
+            subprocess.run(["git", "-C", d, "config", "claude.forcePushDefaultBranch", "o/r"], check=True)
+            self.assertIsNotNone(violation("git push --force-with-lease=main", d))
 
     def test_plain_push_and_feature_branch_force_are_allowed(self):
         self.assertIsNone(violation("git push origin main", "/r", only()))
