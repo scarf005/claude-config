@@ -7,6 +7,7 @@
 - Agent: a `pr-writer` brief is capped at 600 characters, so the parent passes facts, not its session story.
 """
 import json
+import os
 import re
 import shlex
 import sys
@@ -30,6 +31,7 @@ WRITER = "pr-writer"
 BRIEF_LIMIT = 600
 TICKED_ISSUE_BOX = re.compile(r"^\s*- \[[xX]\] I linked any relevant issues.*$", re.M)
 ISSUE_REF = re.compile(r"(?:^|[\s(])#\d+\b|/(?:issues|pull)/\d+")
+TEMP_NAME = re.compile(r"tmp\.?[A-Za-z0-9_]{6,}(?:\.\w+)?$")
 
 
 def segments(command):
@@ -88,6 +90,11 @@ def ticked_issue_box_without_issue(body):
 
 def body_problem(command):
     for path in body_files(command):
+        if path != "-" and not TEMP_NAME.match(os.path.basename(path)):
+            return (
+                f"{path} is a fixed name, and parallel agents share the scratchpad. "
+                "Write the body to a new `mktemp` file and pass that path."
+            )
         try:
             with open(path, encoding="utf-8") as f:
                 body = f.read()

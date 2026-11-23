@@ -23,6 +23,18 @@ class PrWritingTest(unittest.TestCase):
         data = {"tool_name": "Bash", "agent_type": "pr-writer", "tool_input": {"command": command}}
         self.assertIn("linked-issue checkbox", deny_reason(data))
 
+    def test_pr_writer_body_file_needs_a_temp_name(self):
+        """Parallel `pr-writer`s share the scratchpad: `--body-file pr-body.md` is denied, a `mktemp` name is not."""
+        with tempfile.TemporaryDirectory() as d:
+            fixed, temp = os.path.join(d, "pr-body.md"), os.path.join(d, "tmp.Ab3dE5gH7j")
+            for path in (fixed, temp):
+                with open(path, "w") as f:
+                    f.write("Why: tests fail.\n")
+            data = lambda path: {"tool_name": "Bash", "agent_type": "pr-writer",
+                                 "tool_input": {"command": "gh pr edit 5 -R o/r --body-file " + path}}
+            self.assertIn("mktemp", deny_reason(data(fixed)))
+            self.assertIsNone(deny_reason(data(temp)))
+
     def test_pr_create_and_edit_are_writes(self):
         self.assertTrue(writes_body("gh pr create --fill"))
         self.assertTrue(writes_body("gh pr edit 12 --body-file b.md"))
