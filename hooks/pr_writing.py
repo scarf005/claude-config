@@ -134,9 +134,21 @@ def body_problem(command):
     return None
 
 
+CAPTURE = re.compile(r"https?://\S*(?:asciinema\.org/a/|\.webp\b)")
+NO_VISIBLE_CHANGE = "no player-visible change"
+
+
 def brief_problem(tool_input):
-    """Return a deny reason for an over-long `pr-writer` brief, else None."""
-    if tool_input.get("subagent_type") != WRITER or len(tool_input.get("prompt", "")) <= BRIEF_LIMIT:
+    """Return a deny reason for an over-long `pr-writer` brief or a new-PR brief without captures, else None."""
+    prompt = tool_input.get("prompt", "")
+    if tool_input.get("subagent_type") != WRITER:
+        return None
+    if re.search(r"\bbase\b", prompt) and not CAPTURE.search(prompt) and NO_VISIBLE_CHANGE not in prompt.lower():
+        return (
+            "A new-PR `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp) "
+            f"with what each shows, or the words `{NO_VISIBLE_CHANGE}` when the player sees nothing new."
+        )
+    if len(prompt) <= BRIEF_LIMIT:
         return None
     return (
         f"A `{WRITER}` brief must stay within {BRIEF_LIMIT} characters: repo, PR number or branch and base, "

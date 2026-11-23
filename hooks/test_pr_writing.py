@@ -135,6 +135,13 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNotNone(brief_problem({"subagent_type": "pr-writer", "prompt": "x" * 601}))
         self.assertIsNone(brief_problem({"subagent_type": "implementer", "prompt": "x" * 601}))
 
+    def test_new_pr_brief_needs_captures(self):
+        """A brief naming a base is denied without an asciinema or .webp URL, unless it says nothing visible changed."""
+        brief = {"subagent_type": "pr-writer", "prompt": "Repo a/b, base main, head x. No captures."}
+        self.assertIsNotNone(brief_problem(brief))
+        self.assertIsNone(brief_problem(brief | {"prompt": "base main. Before https://x/y/before.webp, https://asciinema.org/a/1"}))
+        self.assertIsNone(brief_problem(brief | {"prompt": "base main. No player-visible change."}))
+
     def test_skill_load_is_read_from_transcript(self):
         with tempfile.NamedTemporaryFile("w", suffix=".jsonl") as f:
             f.write('{"name":"Skill","input":{"skill":"pr-writing"}}\n')
