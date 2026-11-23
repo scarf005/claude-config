@@ -357,7 +357,15 @@
         "~/.config/pi/.git"
       ],
       "denyWrite": [
-        "~/.gnupg/private-keys-v1.d"
+        "~/.gnupg/private-keys-v1.d",
+        "~/.config/.git/hooks",
+        "~/.config/.git/config",
+        "~/.config/claude/.git/hooks",
+        "~/.config/claude/.git/config",
+        "~/.config/codex/.git/hooks",
+        "~/.config/codex/.git/config",
+        "~/.config/pi/.git/hooks",
+        "~/.config/pi/.git/config"
       ],
       "denyRead": [
         "~/.aws",
