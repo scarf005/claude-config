@@ -60,6 +60,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "skillOverrides": {
     "grill-me": "off",
     "ffmpeg": "off",
@@ -393,7 +394,7 @@
       "autoCompactWindow": 160000
     },
     "claude-fable-5-2": {
-      "effortLevel": "medium",
+      "effortLevel": "xhigh",
       "autoCompactWindow": 300000
     }
   },
@@ -428,6 +429,5 @@
       "**Trusted repo**: /home/scarf/repo/etc/hypha (local checkout, no configured remotes)",
       "**Org-specific CLIs**: None configured — project uses godot, xvfb-run, ffmpeg routinely per usage evidence"
     ]
-  },
-  "model": "opus"
+  }
 }
