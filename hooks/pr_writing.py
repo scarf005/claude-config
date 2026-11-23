@@ -31,11 +31,17 @@ WRITER = "pr-writer"
 BRIEF_LIMIT = 600
 TICKED_ISSUE_BOX = re.compile(r"^\s*- \[[xX]\] I linked any relevant issues.*$", re.M)
 ISSUE_REF = re.compile(r"(?:^|[\s(])#\d+\b|/(?:issues|pull)/\d+")
-TEMP_NAME = re.compile(r"tmp\.?[A-Za-z0-9_]{6,}(?:\.\w+)?$")
+# `mktemp` names: the default `tmp.XXXXXXXXXX`, or a template such as `pr-body.XXXXXX` (random suffix).
+TEMP_NAME = re.compile(r"^tmp\.?[A-Za-z0-9_]{6,}(?:\.\w+)?$|\.(?=[a-z]*[A-Z0-9])[A-Za-z0-9]{6,}$")
+GH_API = re.compile(r"\bgh\s+api\b")
+BODY_HOW = (
+    "Run `mktemp` alone, write the body to the path it prints with the Write tool, then pass that literal path "
+    "to `--body-file` in a command of its own. If that is blocked too, report the blocker and stop."
+)
 
 
-def segments(command):
-    """Split a command into its simple commands at unquoted `;`, `&`, `|` and newlines; each comes back as one line."""
+def token_segments(command):
+    """Split a command into its simple commands at unquoted `;`, `&`, `|` and newlines; each is a list of words."""
     lexer = shlex.shlex(command.replace("\\\n", " "), posix=True, punctuation_chars=";&|\n")
     lexer.whitespace = " \t\r"
     lexer.whitespace_split = True
@@ -43,14 +49,19 @@ def segments(command):
     try:
         tokens = list(lexer)
     except ValueError:
-        return [command.replace("\n", " ")]
+        return [command.replace("\n", " ").split()]
     parts = [[]]
     for token in tokens:
         if set(token) <= set(";&|\n"):
             parts.append([])
         else:
             parts[-1].append(token.replace("\n", " "))
-    return [" ".join(part) for part in parts]
+    return parts
+
+
+def segments(command):
+    """`token_segments`, each simple command joined into one line."""
+    return [" ".join(part) for part in token_segments(command)]
 
 
 def writes_body(command):
@@ -70,15 +81,25 @@ def skill_loaded(transcript_path):
 
 
 def body_files(command):
-    """Return the `--body-file`/`-F` paths of PR writes in a command."""
+    """Return the `--body-file`/`-F` paths of `gh pr` writes in a command; None for a body that is not in a file."""
     paths = []
-    for segment in segments(command):
-        if not PR_WRITE.search(segment):
+    for tokens in token_segments(command):
+        if not PR_WRITE.search(" ".join(tokens)):
             continue
-        tokens = shlex.split(segment)
-        for flag, value in zip(tokens, tokens[1:]):
-            if flag in ("--body-file", "-F") and not value.startswith(("title=", "body=")):
-                paths.append(value)
+        if GH_API.search(" ".join(tokens)):
+            return None
+        values = iter(tokens)
+        for flag in values:
+            if flag in ("--title", "-t"):
+                next(values, None)
+            elif flag in ("--body-file", "-F"):
+                paths.append(next(values, ""))
+            elif flag.startswith("--body-file="):
+                paths.append(flag.split("=", 1)[1])
+            elif flag.startswith("-F"):
+                paths.append(flag[2:].removeprefix("="))
+            elif flag == "--body" or flag.startswith(("--body=", "-b")):
+                return None
     return paths
 
 
@@ -89,17 +110,23 @@ def ticked_issue_box_without_issue(body):
 
 
 def body_problem(command):
-    for path in body_files(command):
-        if path != "-" and not TEMP_NAME.match(os.path.basename(path)):
-            return (
-                f"{path} is a fixed name, and parallel agents share the scratchpad. "
-                "Write the body to a new `mktemp` file and pass that path."
-            )
+    paths = body_files(command)
+    if paths is None:
+        return f"Write the PR body only with `gh pr create` or `gh pr edit` and `--body-file <path>`. {BODY_HOW}"
+    for path in paths:
+        if path == "-":
+            return f"`--body-file -` reads the body from stdin, where it cannot be checked. {BODY_HOW}"
+        if re.search(r"[$`]", path) or not os.path.isabs(path):
+            return f"`--body-file {path}` is not a literal absolute path. {BODY_HOW}"
+        if not TEMP_NAME.search(os.path.basename(path)):
+            return f"{path} is a fixed name, and parallel agents share the scratchpad. {BODY_HOW}"
         try:
             with open(path, encoding="utf-8") as f:
                 body = f.read()
         except OSError:
-            continue
+            return f"Cannot read {path}. {BODY_HOW}"
+        if not body.strip():
+            return f"{path} is empty. Write the body into it first, in its own command."
         if ticked_issue_box_without_issue(body):
             return (
                 f"{path} ticks the linked-issue checkbox, but the body links no issue. Untick it or link the issue."

@@ -19,9 +19,10 @@ the brief and what you read yourself; that is on purpose. Do not ask for the bac
 3. Write the text by the `pr-writing` skill. English prose follows ASD-STE100 Simplified Technical English. Run the
    `humanizer` skill's checks on it and fix every tell.
 4. Put a capture from the brief in Testing under the local test line, as `![what it shows](url)`.
-5. Write the body to a new file from `mktemp`; other agents share the scratchpad, so never reuse a fixed name like
-   `pr-body.md`. Create or edit the PR with `--body-file` and `-R <repo>`. Fetch the body back with `gh pr view` and
-   diff it against your file.
+5. Run `mktemp` alone and write the body to the path it prints with the Write tool; other agents share the
+   scratchpad, so never reuse a fixed name like `pr-body.md`. Create or edit the PR with `gh pr create` or
+   `gh pr edit`, `-R <repo>`, and `--body-file <that literal path>`, in a command of its own; no stdin (`-`), shell
+   variable, `--body`, or `gh api`. Fetch the body back with `gh pr view` and diff it against your file.
 6. Reply with the PR URL and the fetched title and body, nothing else; on a diff, fix the PR first.
 
 Rules: use `gh`, never comment on GitHub, never push or change commits, use `rg` instead of `grep`. If a command is

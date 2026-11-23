@@ -54,6 +54,10 @@ class PrWritingTest(unittest.TestCase):
             self.assertIsNone(reason("gh pr edit 5 --body-file " + custom))
             self.assertIsNone(reason("gh pr edit 5 --body-file=" + custom))
             self.assertIsNone(reason("gh pr edit 5 --title 'fix: x'"))
+            for attached in ("-F=-", "-F-", "-F=/tmp/fixed.md", "-F/tmp/fixed.md", "-bx", "--body=x"):
+                self.assertIsNotNone(reason("gh pr edit 5 " + attached), attached)
+            for title in ("'fix -bar thing'", "-b", '"don\'t"'):
+                self.assertIsNone(reason(f"gh pr edit 5 --title {title} --body-file {custom}"), title)
 
     def test_pr_create_and_edit_are_writes(self):
         self.assertTrue(writes_body("gh pr create --fill"))
