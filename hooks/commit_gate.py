@@ -9,16 +9,21 @@ import json
 import re
 import sys
 
-GIT = r"^\s*git\s+(?:-[Cc]\s+\S+\s+)*"
+GIT = (r"^\s*(?:\(\s*|(?:env|command|exec)\s+|\w+=\S*\s+|(?:ba|z|fi)?sh\s+-c\s+['\"])*git\s+"
+       r"(?:(?:-[Cc]\s+(?:'[^']*'|\"[^\"]*\"|[^\s'\"])+|--[\w-]+(?:=\S+)?)\s+)*")
 COMMIT = re.compile(GIT + r"commit(?![-\w])")
 SHORTSTAT = re.compile(GIT + r"diff\b.*--shortstat\b")
-PATCH = re.compile(GIT + r"(?:diff|show)\b(?!.*--(?:shortstat|stat|numstat|name-only|name-status|quiet|exit-code)\b)")
-SHELL_EDIT = re.compile(r"^\s*sed\s+-i\b|" + GIT + r"apply\b")
+SUMMARY_ONLY = r"--(?:shortstat|stat|numstat|name-only|name-status|quiet|exit-code|check|no-patch|summary|raw|compact-summary)\b|\s-s\b|\S:\S"
+PATCH = re.compile(GIT + r"(?:(?:diff|show)\b(?!.*(?:" + SUMMARY_ONLY + r"))|log\b.*\s(?:-p|--patch)\b)")
+SHELL_EDIT = re.compile(r"^\s*(?:sed\s+-i|perl\s+-\w*i|patch|tee|cp|mv)\b|(?<![-=>&])>>?\s*(?!/dev/|/tmp/|&)\S|" + GIT
+                        + r"(?:apply|am|checkout|restore|merge|cherry-pick|rebase|revert|stash\s+(?:pop|apply)|mv|rm)\b")
 SEPARATOR = re.compile(r"&&|\|\||;|\||\n")
+HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?(.*?\n).*?^\s*\1\s*$", re.S | re.M)
 
 
 def has(pattern, command):
-    return isinstance(command, str) and any(pattern.search(part) for part in SEPARATOR.split(command))
+    return isinstance(command, str) and any(
+        pattern.search(part) for part in SEPARATOR.split(HEREDOC.sub(r"<<\2", command)))
 
 
 def tool_uses(lines):
@@ -39,7 +44,7 @@ def needs_review(lines):
     measured = read = True
     for name, args in tool_uses(lines):
         command = args.get("command") if name == "Bash" else None
-        if name in ("Edit", "Write", "NotebookEdit") or has(SHELL_EDIT, command):
+        if name in ("Edit", "MultiEdit", "Write", "NotebookEdit") or has(SHELL_EDIT, command):
             measured = read = False
         elif not has(COMMIT, command):
             measured = measured or has(SHORTSTAT, command)
@@ -62,8 +67,8 @@ def main():
             "permissionDecision": "deny",
             "permissionDecisionReason": "Files changed after the last diff review. Run "
                                         "`git diff --shortstat <base>...` and read the whole patch "
-                                        "(`git diff <base>...`), review it for correctness, make one LoC "
-                                        "shrink pass, then commit.",
+                                        "(`git diff <base>...`) in calls before the commit call, review it "
+                                        "for correctness, make one LoC shrink pass, then commit.",
         }}))
 
 

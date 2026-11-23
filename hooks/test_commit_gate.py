@@ -15,19 +15,28 @@ STAT = use("Bash", command="git diff --shortstat upstream/main... && git diff up
 
 class CommitGateTest(unittest.TestCase):
     def test_commit_commands_match_and_prose_does_not(self):
-        for cmd in ["git commit -m x", "cd /r && git -c a=b -C /p commit -q", "git add a; git commit --amend"]:
+        for cmd in ["git commit -m x", "cd /r && git -c a=b -C /p commit -q", "git add a; git commit --amend",
+                    "GIT_AUTHOR_DATE=x git commit", "env git commit", "git --no-pager commit",
+                    "git -c user.name='a b' commit", "bash -c 'git commit -m x'", "cat <<EOF\nx\nEOF\ngit commit"]:
             self.assertTrue(has(COMMIT, cmd), cmd)
-        for cmd in ["git commit-tree HEAD^{tree}", 'gh pr create --body "run git commit"', "echo git commit"]:
+        for cmd in ["git commit-tree HEAD^{tree}", 'gh pr create --body "run git commit"', "echo git commit",
+                    "python3 - <<'EOF'\ns = 'x; git commit'\nEOF"]:
             self.assertFalse(has(COMMIT, cmd), cmd)
 
     def test_edit_after_measurement_needs_review(self):
         self.assertTrue(needs_review([EDIT]))
         self.assertTrue(needs_review([EDIT, STAT, use("Bash", command="sed -i s/a/b/ f")]))
         self.assertTrue(needs_review([EDIT, use("Bash", command="git diff --shortstat && git commit -m x")]))
-        self.assertTrue(needs_review([EDIT, use("Bash", command="git diff --shortstat; git diff --stat")]))
+        for cmd in ["git diff --stat", "git diff --check", "git show -s HEAD", "git show HEAD:a.ts"]:
+            self.assertTrue(needs_review([EDIT, use("Bash", command="git diff --shortstat; " + cmd)]), cmd)
+        for cmd in ["cat > a.ts <<EOF\nx\nEOF", "git cherry-pick x", "perl -pi -e s/a/b/ f", "cp b a.ts"]:
+            self.assertTrue(needs_review([EDIT, STAT, use("Bash", command=cmd)]), cmd)
 
     def test_measurement_after_last_edit_allows_commit(self):
-        self.assertFalse(needs_review([EDIT, STAT, use("Bash", command='rg "sed -i" docs')]))
+        for cmd in ['rg "sed -i" docs', "make 2>&1 > /dev/null", "echo 1 -> 3", "run > /tmp/log"]:
+            self.assertFalse(needs_review([EDIT, STAT, use("Bash", command=cmd)]), cmd)
+        self.assertFalse(needs_review([EDIT, use("Bash", command="git --no-pager diff --shortstat"),
+                                       use("Bash", command="git log -p main..")]))
         self.assertFalse(needs_review([EDIT, use("Bash", command="git diff --cached --shortstat"),
                                        use("Bash", command="git -C /r show HEAD")]))
         self.assertFalse(needs_review(["not json", "123", '{"type": "assistant", "message": "x"}',
