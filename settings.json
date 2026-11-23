@@ -350,7 +350,11 @@
         "~/.rustup",
         "~/.local/share/Trash",
         "~/.local/state",
-        "~/.gnupg"
+        "~/.gnupg",
+        "~/.config/.git",
+        "~/.config/claude/.git",
+        "~/.config/codex/.git",
+        "~/.config/pi/.git"
       ],
       "denyWrite": [
         "~/.gnupg/private-keys-v1.d"
