@@ -2,15 +2,18 @@
 """Sticker hooks for the active persona (index: persona/stickers/<persona>.tsv, first line `dir<TAB>path`, then `file<TAB>moods<TAB>text`).
 
 `inject` (UserPromptSubmit) lists one random sticker per mood of the session's persona as context; `check` (Stop) blocks once, pointing at the index file, when the reply does not end with a sticker path.
+A "show"/"output" prompt wants the output alone: `inject` asks for no stickers and marks the session (`<session_id>.plain`) so `check` skips that reply.
 """
 import json
 import random
+import re
 import sys
 from pathlib import Path
 
 PERSONAS = Path.home() / ".config/persona"
 SESSIONS = Path.home() / ".local/state/persona-sessions"
 TAIL_LINES = 3
+OUTPUT_ONLY = re.compile(r"^\s*(?:show|print|output|cat)\b|\b(?:output|print)\s+only\b|(?:출력|보여)\s*(?:만|해\s*주|해\s*줘|주세요|줘)", re.I)
 
 
 def parse(index):
@@ -35,19 +38,30 @@ def candidates(packs):
     return "\n".join(out)
 
 
+def plain_marker(sessions, data):
+    return sessions / f"{data.get('session_id') or '-'}.plain"
+
+
+def context(text):
+    return json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": text}}, ensure_ascii=False)
+
+
 def inject(persona_dir, sessions, data):
     loaded = load(persona_dir, sessions, data.get("session_id"))
     if not loaded:
         return ""
-    return json.dumps({"hookSpecificOutput": {
-        "hookEventName": "UserPromptSubmit",
-        "additionalContext": "End the reply with 1-3 stickers on their own lines (absolute path, no code block), matched to the reply's mood. Pick from the candidates of the persona whose voice you use, one per mood:\n" + candidates(loaded),
-    }}, ensure_ascii=False)
+    marker = plain_marker(sessions, data)
+    if OUTPUT_ONLY.search(data.get("prompt") or ""):
+        sessions.mkdir(parents=True, exist_ok=True)
+        marker.touch()
+        return context("The prompt asks to show or output something: reply with the output alone, no stickers.")
+    marker.unlink(missing_ok=True)
+    return context("End the reply with 1-3 stickers on their own lines (absolute path, no code block), matched to the reply's mood. Pick from the candidates of the persona whose voice you use, one per mood:\n" + candidates(loaded))
 
 
 def check(persona_dir, sessions, data):
     loaded = load(persona_dir, sessions, data.get("session_id"))
-    if not loaded or data.get("stop_hook_active"):
+    if not loaded or data.get("stop_hook_active") or plain_marker(sessions, data).exists():
         return ""
     tail = [l for l in (data.get("last_assistant_message") or "").splitlines() if l.strip()][-TAIL_LINES:]
     if not tail or any(d in l for d, _ in loaded.values() for l in tail):

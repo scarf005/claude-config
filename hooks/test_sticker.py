@@ -61,6 +61,12 @@ class Inject(unittest.TestCase):
         d = make_dir()
         self.assertGreater(len({next(l for l in ctx(d).splitlines() if l.startswith("- success")) for _ in range(50)}), 1)
 
+    def test_output_only_prompt_asks_for_no_stickers(self):
+        d = make_dir()
+        for prompt in ["show the diff", "로그 출력해 주세요", "결과만 보여주세요", "print only the path"]:
+            out = json.loads(inject(d, d / "s", {"session_id": "sid", "prompt": prompt}))
+            self.assertNotIn(PACK, out["hookSpecificOutput"]["additionalContext"], prompt)
+
     def test_persona_without_index_injects_nothing(self):
         self.assertEqual(inject(d := make_dir("off", index=False), d / "s", {}), "")
 
@@ -88,6 +94,13 @@ class Check(unittest.TestCase):
 
     def test_second_stop_does_not_block_again(self):
         self.assertEqual(self.run_check("끝이에요", stop_hook_active=True), "")
+
+    def test_reply_to_output_only_prompt_passes_and_next_prompt_blocks_again(self):
+        d = make_dir()
+        inject(d, d / "s", {"session_id": "sid", "prompt": "show the diff"})
+        self.assertEqual(check(d, d / "s", {"session_id": "sid", "last_assistant_message": "diff"}), "")
+        inject(d, d / "s", {"session_id": "sid", "prompt": "훅 충돌도 고쳐주세요"})
+        self.assertTrue(check(d, d / "s", {"session_id": "sid", "last_assistant_message": "끝이에요"}))
 
     def test_persona_without_index_never_blocks(self):
         self.assertEqual(check(d := make_dir("off", index=False), d / "s", {"last_assistant_message": "끝"}), "")
