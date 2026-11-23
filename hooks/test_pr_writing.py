@@ -35,6 +35,26 @@ class PrWritingTest(unittest.TestCase):
             self.assertIn("mktemp", deny_reason(data(fixed)))
             self.assertIsNone(deny_reason(data(temp)))
 
+    def test_pr_writer_body_comes_only_from_a_checked_file(self):
+        """`pr-writer` cannot pass a body the hook cannot read: stdin, a shell variable, `--body`, `gh api`, or an
+        empty file. `cat empty | gh pr create --body-file -` opened a PR with an empty body."""
+        with tempfile.TemporaryDirectory() as d:
+            empty, custom = os.path.join(d, "tmp.Ab3dE5gH7j"), os.path.join(d, "pr-body.jHuSUk")
+            open(empty, "w").close()
+            with open(custom, "w") as f:
+                f.write("Why: tests fail.\n")
+            reason = lambda command: deny_reason(
+                {"tool_name": "Bash", "agent_type": "pr-writer", "tool_input": {"command": command}})
+            self.assertIn("stdin", reason("cat b | gh pr create -R o/r --title x --body-file -"))
+            self.assertIn("literal", reason("f=$(mktemp); gh pr create --title x --body-file $f"))
+            self.assertIn("--body-file", reason("gh pr edit 5 --body 'Why: x'"))
+            self.assertIn("--body-file", reason("gh api -X PATCH repos/o/r/pulls/5 -F body=@" + custom))
+            self.assertIn("empty", reason("gh pr edit 5 --body-file " + empty))
+            self.assertIn("read", reason("gh pr edit 5 --body-file " + os.path.join(d, "tmp.Zz9yX8wV7u")))
+            self.assertIsNone(reason("gh pr edit 5 --body-file " + custom))
+            self.assertIsNone(reason("gh pr edit 5 --body-file=" + custom))
+            self.assertIsNone(reason("gh pr edit 5 --title 'fix: x'"))
+
     def test_pr_create_and_edit_are_writes(self):
         self.assertTrue(writes_body("gh pr create --fill"))
         self.assertTrue(writes_body("gh pr edit 12 --body-file b.md"))
