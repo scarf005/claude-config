@@ -61,7 +61,9 @@
     "defaultMode": "auto"
   },
   "skillOverrides": {
-    "grill-me": "off"
+    "grill-me": "off",
+    "ffmpeg": "off",
+    "reverse-engineer-anything": "off"
   },
   "hooks": {
     "UserPromptSubmit": [
