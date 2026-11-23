@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: deny `git commit` when files changed after the last `git diff --shortstat` in this session.
+"""PreToolUse hook: deny `git commit` until the diff is measured and read after the last edit in this session.
 
 The rule asks for a self-review and one LoC shrink pass over the whole diff before every commit.
-Measuring the diff in its own call, after the last edit, is the step that starts that pass.
+A `git diff --shortstat` and a patch-showing `git diff`/`git show`, both after the last edit, start that pass.
 Only shell segments that start with the command count, so quoted prose never matches.
 """
 import json
@@ -12,6 +12,7 @@ import sys
 GIT = r"^\s*git\s+(?:-[Cc]\s+\S+\s+)*"
 COMMIT = re.compile(GIT + r"commit(?![-\w])")
 SHORTSTAT = re.compile(GIT + r"diff\b.*--shortstat\b")
+PATCH = re.compile(GIT + r"(?:diff|show)\b(?!.*--(?:shortstat|stat|numstat|name-only|name-status|quiet|exit-code)\b)")
 SHELL_EDIT = re.compile(r"^\s*sed\s+-i\b|" + GIT + r"apply\b")
 SEPARATOR = re.compile(r"&&|\|\||;|\||\n")
 
@@ -34,15 +35,16 @@ def tool_uses(lines):
 
 
 def needs_review(lines):
-    """True when an edit came after the last standalone shortstat."""
-    dirty = False
+    """True when the last edit is not followed by both a shortstat and a patch, outside commit commands."""
+    measured = read = True
     for name, args in tool_uses(lines):
         command = args.get("command") if name == "Bash" else None
         if name in ("Edit", "Write", "NotebookEdit") or has(SHELL_EDIT, command):
-            dirty = True
-        elif has(SHORTSTAT, command) and not has(COMMIT, command):
-            dirty = False
-    return dirty
+            measured = read = False
+        elif not has(COMMIT, command):
+            measured = measured or has(SHORTSTAT, command)
+            read = read or has(PATCH, command)
+    return not (measured and read)
 
 
 def main():
@@ -58,9 +60,10 @@ def main():
         print(json.dumps({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": "Files changed after the last diff measurement. Run "
-                                        "`git diff --shortstat <base>...` in its own call, review the whole "
-                                        "diff for correctness and make one LoC shrink pass, then commit.",
+            "permissionDecisionReason": "Files changed after the last diff review. Run "
+                                        "`git diff --shortstat <base>...` and read the whole patch "
+                                        "(`git diff <base>...`), review it for correctness, make one LoC "
+                                        "shrink pass, then commit.",
         }}))
 
 

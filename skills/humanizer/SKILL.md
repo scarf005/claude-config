@@ -36,12 +36,12 @@ targets. Embedded mode: final text only. Code-text mode: change only names, stri
 - Bug reports: symptom and related link first, then repro, environment, logs. Performance PRs and commits: before/after
   table with a speedup column (`3.08x (-68%)`). Images committed to a repository: WebP quality 50-75.
 ## Patterns
-1. Not X but Y (also "not just", "rather than", split over two sentences, ", no guessing"): state the point. 2. One-
+1. Not X but Y (also "not just", "rather than", split over two sentences, ", no guessing"): state the point; keep a contrast when both halves carry facts. 2. One-
 line closers and fragments ("That is the real win."): cut unless they add a fact. 3. Sayings that sound deep (the real
 question is, at its core). 4. Staged run-up (let's dive in, here's the thing, Honestly?). 5. Arguing with no one (I'm
 not saying, to be clear, a tempting approach would be). 6. Forced triads. 7. Repeated sentence openings. 8. Dashes (—
-– --) as connector: use period, comma, colon; keep in code and URLs. 9. Stacked qualifiers. 10. Hyphenated pairs after
-the noun (`is high quality`). 11. Passive voice and missing subjects. 12. AI words: additionally, crucial, delve,
+– --) as connector: use period, comma, colon; keep in code and URLs. 9. Stacked qualifiers; keep scope, legal and safety
+ones. 10. Hyphenated pairs after the noun (`is high quality`); fixed terms (third-party) keep the hyphen. 11. Passive voice and missing subjects. 12. AI words: additionally, crucial, delve,
 enhance, highlight, intricate, landscape, pivotal, robust, showcase, tapestry, testament, underscore, vibrant,
 valuable, meticulous, garner, enduring. 13. Inflated significance ("Challenges and Outlook", "the future looks
 bright"): end on a concrete fact. 14. Vague connection (associated with): name the relationship. 15. Shallow -ing

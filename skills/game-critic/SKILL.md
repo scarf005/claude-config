@@ -17,7 +17,8 @@ exists or is gone.
 4. Fix S1 and S2 yourself, recapture the same moments, re-judge. Stop when a fresh full pass finds none; list the
    remaining S3 and every unverified path.
 5. Never end a round with "not measured" items you could measure now. Turn each lens into a number (spawn distance,
-   enemy count and spacing, course time, reachable area, floor under the body) and sweep it exhaustively.
+   enemy count and spacing, course time, reachable area, floor under the body) and sweep it exhaustively; a lens
+   checked only where a bug was already reported is unchecked.
 
 ## Lenses (check all, in order)
 
@@ -33,7 +34,8 @@ exists or is gone.
 - Game feel: hit feedback, impacts, camera response, audio cues; player power reads on screen.
 - Traversal and collision: sweep the body across the whole playable width at many positions (not by reading code) and
   compare stops with what is drawn; every block is a visible object; a rule that moves the player without input is
-  S1. Sweep height too: at edges, section boundaries and arena corners the body neither sinks nor tilts off the floor.
+  S1. Sweep height too: at edges, section boundaries and arena corners the body neither sinks nor tilts off the floor;
+  floor extents cover every sample the body takes, not only its centre.
 - Threat uptime: with the player moving at real speed, log each enemy kind's shots per ten seconds and seconds to first
   contact; a hunter firing under once per ten seconds, or stuck in a state loop (reposition, cover, band edge), is
   S1. Station keeping must hold while the target moves.

@@ -10,7 +10,7 @@ def use(name, **args):
 
 
 EDIT = use("Edit", file_path="a.ts")
-STAT = use("Bash", command="git diff --shortstat upstream/main...")
+STAT = use("Bash", command="git diff --shortstat upstream/main... && git diff upstream/main...")
 
 
 class CommitGateTest(unittest.TestCase):
@@ -24,9 +24,12 @@ class CommitGateTest(unittest.TestCase):
         self.assertTrue(needs_review([EDIT]))
         self.assertTrue(needs_review([EDIT, STAT, use("Bash", command="sed -i s/a/b/ f")]))
         self.assertTrue(needs_review([EDIT, use("Bash", command="git diff --shortstat && git commit -m x")]))
+        self.assertTrue(needs_review([EDIT, use("Bash", command="git diff --shortstat; git diff --stat")]))
 
     def test_measurement_after_last_edit_allows_commit(self):
         self.assertFalse(needs_review([EDIT, STAT, use("Bash", command='rg "sed -i" docs')]))
+        self.assertFalse(needs_review([EDIT, use("Bash", command="git diff --cached --shortstat"),
+                                       use("Bash", command="git -C /r show HEAD")]))
         self.assertFalse(needs_review(["not json", "123", '{"type": "assistant", "message": "x"}',
                                        use("Bash", command=["not", "str"])]))
 
