@@ -23,7 +23,10 @@ def script_texts(command):
     except ValueError:
         tokens = command.split()
     for token in tokens:
-        path = Path(token).expanduser()
+        try:
+            path = Path(token).expanduser()
+        except RuntimeError:
+            path = Path(token)
         if path.suffix in SCRIPT_SUFFIXES and path.is_file() and path.stat().st_size < 1_000_000:
             yield path.read_text(errors="replace")
 
