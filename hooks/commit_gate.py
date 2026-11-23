@@ -3,10 +3,12 @@
 
 The rule asks for a self-review and one LoC shrink pass over the whole diff before every commit.
 A `git diff --shortstat` and a patch-showing `git diff`/`git show`, both after the last edit, start that pass.
+Deny it also when the diff adds comments and an edit follows the last humanizer skill load.
 Only shell segments that start with the command count, so quoted prose never matches.
 """
 import json
 import re
+import subprocess
 import sys
 
 GIT = (r"^\s*(?:\(\s*|(?:env|command|exec)\s+|\w+=\S*\s+|(?:ba|z|fi)?sh\s+-c\s+['\"])*git\s+"
@@ -18,6 +20,8 @@ PATCH = re.compile(GIT + r"(?:(?:diff|show)\b(?!.*(?:" + SUMMARY_ONLY + r"))|log
 SHELL_EDIT = re.compile(r"^\s*(?:sed\s+-i|perl\s+-\w*i|patch|tee|cp|mv)\b|(?<![-=>&])>>?\s*(?!/dev/|/tmp/|&)\S|" + GIT
                         + r"(?:apply|am|checkout|restore|merge|cherry-pick|rebase|revert|stash\s+(?:pop|apply)|mv|rm)\b")
 SEPARATOR = re.compile(r"&&|\|\||;|\||\n")
+COMMENT = re.compile(r"^\+(?!\+\+)\s*(?://|/\*|\*\s|#\s|--\s)", re.M)
+EDITS = ("Edit", "MultiEdit", "Write", "NotebookEdit")
 HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?(.*?\n).*?^\s*\1\s*$", re.S | re.M)
 
 
@@ -44,12 +48,33 @@ def needs_review(lines):
     measured = read = True
     for name, args in tool_uses(lines):
         command = args.get("command") if name == "Bash" else None
-        if name in ("Edit", "MultiEdit", "Write", "NotebookEdit") or has(SHELL_EDIT, command):
+        if name in EDITS or has(SHELL_EDIT, command):
             measured = read = False
         elif not has(COMMIT, command):
             measured = measured or has(SHORTSTAT, command)
             read = read or has(PATCH, command)
     return not (measured and read)
+
+
+def needs_humanizer(lines):
+    """True when an edit follows the last humanizer skill load."""
+    loaded = True
+    for name, args in tool_uses(lines):
+        if name in EDITS or has(SHELL_EDIT, args.get("command") if name == "Bash" else None):
+            loaded = False
+        elif name == "Skill" and args.get("skill") == "humanizer":
+            loaded = True
+    return not loaded
+
+
+def adds_comment(cwd):
+    diff = subprocess.run(["git", "diff", "HEAD", "-U0"], cwd=cwd, capture_output=True, text=True).stdout
+    return bool(COMMENT.search(diff))
+
+
+def deny(reason):
+    print(json.dumps({"hookSpecificOutput": {
+        "hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": reason}}))
 
 
 def main():
@@ -58,18 +83,18 @@ def main():
         if not has(COMMIT, data["tool_input"]["command"]):
             return
         with open(data["transcript_path"]) as f:
-            dirty = needs_review(f)
+            lines = f.readlines()
+        dirty = needs_review(lines)
+        unhumanized = needs_humanizer(lines) and adds_comment(data.get("cwd"))
     except (ValueError, KeyError, TypeError, OSError):
         return
     if dirty:
-        print(json.dumps({"hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "deny",
-            "permissionDecisionReason": "Files changed after the last diff review. Run "
-                                        "`git diff --shortstat <base>...` and read the whole patch "
-                                        "(`git diff <base>...`) in calls before the commit call, review it "
-                                        "for correctness, make one LoC shrink pass, then commit.",
-        }}))
+        deny("Files changed after the last diff review. Run `git diff --shortstat <base>...` and read the "
+             "whole patch (`git diff <base>...`) in calls before the commit call, review it for correctness, "
+             "make one LoC shrink pass, then commit.")
+    elif unhumanized:
+        deny("The diff adds comments after the last edit without the humanizer skill. Load the `humanizer` "
+             "skill, rewrite or delete every added comment by its rules, then commit.")
 
 
 if __name__ == "__main__":

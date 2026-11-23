@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from commit_gate import COMMIT, has, needs_review
+from commit_gate import COMMENT, COMMIT, has, needs_humanizer, needs_review
 
 
 def use(name, **args):
@@ -41,6 +41,17 @@ class CommitGateTest(unittest.TestCase):
                                        use("Bash", command="git -C /r show HEAD")]))
         self.assertFalse(needs_review(["not json", "123", '{"type": "assistant", "message": "x"}',
                                        use("Bash", command=["not", "str"])]))
+
+    def test_edit_after_humanizer_load_needs_it_again(self):
+        skill = use("Skill", skill="humanizer")
+        self.assertTrue(needs_humanizer([skill, EDIT]))
+        self.assertFalse(needs_humanizer([EDIT, skill, STAT]))
+
+    def test_added_comment_lines_match(self):
+        for line in ["+// x", "+    /// x", "+/* x", "+ * x", "+# x", "+-- x"]:
+            self.assertTrue(COMMENT.search(line), line)
+        for line in ["+++ b/a.cpp", "+#include <x>", "+int a; ", "-// x", " // x"]:
+            self.assertFalse(COMMENT.search(line), line)
 
 
 if __name__ == "__main__":
