@@ -20,7 +20,7 @@ CD = re.compile(r"^\s*cd\s+(\S+)\s*$")
 def allowed(repo, remote):
     out = subprocess.run(["git", "-C", repo, "config", "--get", "claude.forcePushDefaultBranch"],
                          capture_output=True, text=True).stdout.strip()
-    return out.lower() in ("true", "yes", "on", "1") or (bool(out) and out == remote_slug(repo, remote))
+    return out.lower() in ("true", "yes", "on", "1") or (bool(out) and remote is not None and out == remote_slug(repo, remote))
 
 
 def remote_slug(repo, remote):
