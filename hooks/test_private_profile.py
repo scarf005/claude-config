@@ -41,6 +41,10 @@ class PrivateProfileTest(unittest.TestCase):
             script.write_text('Command::new("gamescope").args(["--", "game", "--configdir", cfg]);')
             self.assertIsNone(run_hook(f"cargo +nightly -Zscript {script} game"))
 
+    def test_tilde_token_without_such_user_passes(self):
+        # "~nouser/x" has no home directory; expanduser raises RuntimeError, so read the token as a plain path
+        self.assertIsNone(run_hook("ls ~nouser/x.py ~~"))
+
     def test_unrelated_commands_pass(self):
         self.assertIsNone(violation("gamescopectl screenshot shot.png"))
         self.assertIsNone(violation("./cataclysm-bn-tiles --check-mods"))
