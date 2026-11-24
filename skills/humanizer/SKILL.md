@@ -29,6 +29,9 @@ targets. Embedded mode: final text only. Code-text mode: change only names, stri
   articles reads as machine telegrams. Define a term only if a newcomer cannot infer it.
   A test comment says what it checks, why, and how, with concrete input and result (`skips "a", reads "a" in a second
   reader`). Match a model text the user points to.
+- UI copy, form fields, bot replies: write what a maintainer would type in a hurry (`This is a pixel art`,
+  `Only paste single image, 10MiB or less. Note: image will be converted into webp (≤128KiB)`). Tell the user what to
+  do; leave out how the program works (lossless, scale factors) unless they act on it.
 - Docs, issues, PRs, release notes, skills: terse, actionable, link sources, include direct related links. No process
   provenance, unmeasured statistics, or statements of absence (no test, not shown, unknown) unless the reader would
   otherwise act on a wrong assumption.
