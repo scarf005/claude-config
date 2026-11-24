@@ -18,6 +18,8 @@
 !hooks/test_sticker.py
 !hooks/catch_notests.py
 !hooks/claude_md_guard.py
+!hooks/prose_gate.py
+!hooks/test_prose_gate.py
 !hooks/test_claude_md_guard.py
 !hooks/pr_writing.py
 !hooks/test_pr_writing.py

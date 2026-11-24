@@ -25,7 +25,8 @@ targets. Embedded mode: final text only. Code-text mode: change only names, stri
   Leave out side changes, self-checks, unrelated defects. Reread each sentence as the reader without the diff.
 - English prose for people (PRs, issues, docs, release notes, commit bodies, code and test comments): ASD-STE100: short
   sentences, one fact or instruction each, active voice, approved common words, numbered steps. Keep code identifiers
-  and domain terms (`memory_istream`, submap, z-level). Avoid `the`; define a term only if a newcomer cannot infer it.
+  and domain terms (`memory_istream`, submap, z-level). Keep `a` and `the` where English needs them: text without
+  articles reads as machine telegrams. Define a term only if a newcomer cannot infer it.
   A test comment says what it checks, why, and how, with concrete input and result (`skips "a", reads "a" in a second
   reader`). Match a model text the user points to.
 - Docs, issues, PRs, release notes, skills: terse, actionable, link sources, include direct related links. No process
@@ -36,9 +37,10 @@ targets. Embedded mode: final text only. Code-text mode: change only names, stri
 - Bug reports: symptom and related link first, then repro, environment, logs. Performance PRs and commits: before/after
   table with a speedup column (`3.08x (-68%)`). Images committed to a repository: WebP quality 50-75.
 ## Patterns
-Before a full rewrite, read `references/patterns.md`: complete word and phrase lists (chatbot residue, knowledge-limit
-disclaimers, qualifiers, AI words with their technical-use carve-outs), voice rules without a sample, why tells count,
-and before/after examples.
+Before the first rewrite in a session, read `references/patterns.md` (hook `prose_gate.py`) and follow its How to work
+steps. Text patched one flagged phrase at a time still reads as machine text. The file has complete word and phrase
+lists (chatbot residue, knowledge-limit disclaimers, qualifiers, AI words with their technical-use carve-outs), voice
+rules without a sample, why tells count, and before/after examples.
 1. Not X but Y (also "not just", "rather than", split over two sentences, ", no guessing"): state the point; keep a contrast when both halves carry facts. 2. One-
 line closers and fragments ("That is the real win."): cut unless they add a fact. 3. Sayings that sound deep (the real
 question is, at its core). 4. Staged run-up (let's dive in, here's the thing, Honestly?). 5. Arguing with no one (I'm
