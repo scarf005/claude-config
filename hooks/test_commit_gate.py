@@ -42,10 +42,14 @@ class CommitGateTest(unittest.TestCase):
         self.assertFalse(needs_review(["not json", "123", '{"type": "assistant", "message": "x"}',
                                        use("Bash", command=["not", "str"])]))
 
-    def test_edit_after_humanizer_load_needs_it_again(self):
+    def test_humanizer_load_covers_later_edits_until_compaction(self):
         skill = use("Skill", skill="humanizer")
-        self.assertTrue(needs_humanizer([skill, EDIT]))
+        compact = json.dumps({"type": "system", "subtype": "compact_boundary"})
+        self.assertTrue(needs_humanizer([EDIT]))
         self.assertFalse(needs_humanizer([EDIT, skill, STAT]))
+        # The deny message asks to load the skill and then rewrite the comments; that rewrite is an edit.
+        self.assertFalse(needs_humanizer([EDIT, skill, EDIT, STAT]))
+        self.assertTrue(needs_humanizer([skill, compact, EDIT]))
 
     def test_added_comment_lines_match(self):
         for line in ["+// x", "+    /// x", "+/* x", "+ * x", "+# x", "+-- x"]:

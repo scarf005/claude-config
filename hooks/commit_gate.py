@@ -3,7 +3,7 @@
 
 The rule asks for a self-review and one LoC shrink pass over the whole diff before every commit.
 A `git diff --shortstat` and a patch-showing `git diff`/`git show`, both after the last edit, start that pass.
-Deny it also when the diff adds comments and an edit follows the last humanizer skill load.
+Deny it also when the diff adds comments and an edit ran without the humanizer skill loaded since the last compaction.
 Only shell segments that start with the command count, so quoted prose never matches.
 """
 import json
@@ -57,14 +57,17 @@ def needs_review(lines):
 
 
 def needs_humanizer(lines):
-    """True when an edit follows the last humanizer skill load."""
-    loaded = True
-    for name, args in tool_uses(lines):
-        if name in EDITS or has(SHELL_EDIT, args.get("command") if name == "Bash" else None):
+    """True when an edit ran without the humanizer skill in context: before its load or after a compaction."""
+    loaded = unhumanized = False
+    for line in lines:
+        if '"subtype": "compact_boundary"' in line or '"subtype":"compact_boundary"' in line:
             loaded = False
-        elif name == "Skill" and args.get("skill") == "humanizer":
-            loaded = True
-    return not loaded
+        for name, args in tool_uses([line]):
+            if name == "Skill" and args.get("skill") == "humanizer":
+                loaded, unhumanized = True, False
+            elif name in EDITS or has(SHELL_EDIT, args.get("command") if name == "Bash" else None):
+                unhumanized = unhumanized or not loaded
+    return unhumanized
 
 
 def adds_comment(cwd):
