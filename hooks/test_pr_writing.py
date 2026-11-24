@@ -135,6 +135,13 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNotNone(brief_problem({"subagent_type": "pr-writer", "prompt": "x" * 601}))
         self.assertIsNone(brief_problem({"subagent_type": "implementer", "prompt": "x" * 601}))
 
+    def test_brief_cannot_dictate_added_prose(self):
+        """A brief like "Under the table add one line: measured with X" is denied; briefs give facts, not sentences."""
+        for prompt in ["PR #5. Under the table add one line: measured with x.", "PR #5. Add a sentence saying y.",
+                       "PR #5. add a note that z"]:
+            self.assertIsNotNone(brief_problem({"subagent_type": "pr-writer", "prompt": prompt}), prompt)
+        self.assertIsNone(brief_problem({"subagent_type": "pr-writer", "prompt": "PR #5. Delete the line x."}))
+
     def test_new_pr_brief_needs_captures(self):
         """A brief naming a base is denied without an asciinema or .webp URL, unless it says nothing visible changed."""
         brief = {"subagent_type": "pr-writer", "prompt": "Repo a/b, base main, head x. No captures."}

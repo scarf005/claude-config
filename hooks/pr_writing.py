@@ -137,6 +137,7 @@ def body_problem(command):
 CAPTURE = re.compile(r"https?://\S*(?:asciinema\.org/a/|\.webp\b)")
 NO_VISIBLE_CHANGE = "no player-visible change"
 EXISTING_PR = re.compile(r"(?i)\bPR\s*#?\d+")
+DICTATED = re.compile(r"(?i)\badd\s+(?:one\s+|a\s+|an\s+)?(?:short\s+)?(?:line|sentence|note|paragraph)\b")
 NO_CAPTURES = (
     "A `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp) "
     f"with what each shows, or the words `{NO_VISIBLE_CHANGE}` when the player sees nothing new."
@@ -161,6 +162,11 @@ def brief_problem(tool_input):
         return None
     if lacks_captures(tool_input) and not EXISTING_PR.search(prompt):
         return NO_CAPTURES
+    if DICTATED.search(prompt):
+        return (
+            "A `pr-writer` brief gives facts, never sentences to add. Name the fact; the writer decides whether a "
+            "reviewer with minutes to spare needs it."
+        )
     if len(prompt) <= BRIEF_LIMIT:
         return None
     return (
