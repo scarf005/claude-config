@@ -3,7 +3,7 @@
 
 The rule asks for a self-review and one LoC shrink pass over the whole diff before every commit.
 A `git diff --shortstat` and a patch-showing `git diff`/`git show`, both after the last edit, start that pass.
-Deny it also when the diff adds comments and an edit ran without the humanizer skill loaded since the last compaction.
+Deny it also when the diff adds comments and an edit ran before the humanizer skill was loaded in this session.
 Only shell segments that start with the command count, so quoted prose never matches.
 """
 import json
@@ -57,17 +57,14 @@ def needs_review(lines):
 
 
 def needs_humanizer(lines):
-    """True when an edit ran without the humanizer skill in context: before its load or after a compaction."""
-    loaded = unhumanized = False
-    for line in lines:
-        if '"subtype": "compact_boundary"' in line or '"subtype":"compact_boundary"' in line:
-            loaded = False
-        for name, args in tool_uses([line]):
-            if name == "Skill" and args.get("skill") == "humanizer":
-                loaded, unhumanized = True, False
-            elif name in EDITS or has(SHELL_EDIT, args.get("command") if name == "Bash" else None):
-                unhumanized = unhumanized or not loaded
-    return unhumanized
+    """True when the session edited files and never loaded the humanizer skill.
+
+    A compaction keeps loaded skills in context, so one load covers the whole session.
+    """
+    uses = list(tool_uses(lines))
+    loaded = any(name == "Skill" and args.get("skill") == "humanizer" for name, args in uses)
+    return not loaded and any(
+        name in EDITS or has(SHELL_EDIT, args.get("command") if name == "Bash" else None) for name, args in uses)
 
 
 def adds_comment(cwd):
