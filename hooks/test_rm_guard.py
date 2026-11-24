@@ -14,7 +14,8 @@ class RmGuardTest(unittest.TestCase):
 
     def test_allows_rm_as_text_or_inside_other_command_names(self):
         for cmd in ["git rm --cached x", "tmp-rm /tmp/x", "rg -n 'rm' f", "gio trash x",
-                    "echo 'do not use rm here'", "rmdir empty", "npm run rm-cache", "ls ~/rm"]:
+                    "echo 'do not use rm here'", "rmdir empty", "npm run rm-cache", "ls ~/rm",
+                    "rg -n 'mv|rm)' f", "jq 'test(\"gio|rm\")'"]:
             self.assertIsNone(violation(cmd), cmd)
 
 
