@@ -28,5 +28,6 @@
 !hooks/test_unstacked_pr.py
 !hooks/local_bench.py
 !hooks/test_local_bench.py
+!hooks/test_rm_guard.py
 !commands/
 !commands/persona.md
