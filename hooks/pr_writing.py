@@ -34,6 +34,9 @@ ISSUE_REF = re.compile(r"(?:^|[\s(])#\d+\b|/(?:issues|pull)/\d+")
 # `mktemp` names: the default `tmp.XXXXXXXXXX`, or a template such as `pr-body.XXXXXX` (random suffix).
 TEMP_NAME = re.compile(r"^tmp\.?[A-Za-z0-9_]{6,}(?:\.\w+)?$|\.(?=[a-z]*[A-Z0-9])[A-Za-z0-9]{6,}$")
 GH_API = re.compile(r"\bgh\s+api\b")
+PROSE_LIMIT = 120
+# Not prose: HTML comments, the checklist and everything after it, code blocks, headings, table rows, URLs.
+NOT_PROSE = re.compile(r"(?s:<!--.*?-->|^#+\s*Checklist\b.*|```.*?```)|^#.*$|^\s*\|.*$|https?://\S+", re.M | re.I)
 BODY_HOW = (
     "Run `mktemp` alone, write the body to the path it prints with the Write tool, then pass that literal path "
     "to `--body-file` in a command of its own. If that is blocked too, report the blocker and stop."
@@ -103,6 +106,10 @@ def body_files(command):
     return paths
 
 
+def prose_words(body):
+    return len(re.findall(r"[A-Za-z][A-Za-z'-]*", NOT_PROSE.sub("", body)))
+
+
 def ticked_issue_box_without_issue(body):
     """True when the body ticks the linked-issue checkbox but links no issue or PR."""
     without_box = TICKED_ISSUE_BOX.sub("", body)
@@ -130,6 +137,11 @@ def body_problem(command):
         if ticked_issue_box_without_issue(body):
             return (
                 f"{path} ticks the linked-issue checkbox, but the body links no issue. Untick it or link the issue."
+            )
+        if (words := prose_words(body)) > PROSE_LIMIT:
+            return (
+                f"{path} has {words} words of prose; 90% of the user's own PRs stay within {PROSE_LIMIT} words. "
+                "Cut it to the length of the bodies in the `pr-writing` skill's references/samples.md."
             )
     return None
 

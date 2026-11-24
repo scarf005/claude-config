@@ -12,6 +12,25 @@ class PrWritingTest(unittest.TestCase):
         self.assertIn("notes file", brief("Repo o/r, branch b, base main. Facts: /tmp/s/facts.md"))
         self.assertIsNone(brief("Repo o/r, branch b, base main. Diff: git -C /w/b diff upstream/main..."))
 
+    def test_body_over_120_prose_words_is_denied(self):
+        """The user's own PR bodies have 42 words of prose at the median; the AI draft of PR 11034 had 199."""
+        user = (
+            "## Purpose of change (The Why)\n\n1. make loading screen submission easier\n"
+            "2. prevent repo size bloat due to more graphic assets\n\n## Describe the solution (The How)\n\n"
+            "1. moved all loading images (and submission) to https://github.com/cataclysmbn/loading-screen\n"
+            "2. bundle it on release\n\n| a | b |\n| --- | --- |\n| ![](https://x/a.webp) | c |\n\n"
+            "<!-- template prompt " + "word " * 200 + "-->\n## Checklist\n\n- [x] " + "word " * 200
+        )
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "tmp.Ab3dE5gH7j")
+            data = {"tool_name": "Bash", "agent_type": "pr-writer",
+                    "tool_input": {"command": "gh pr create -R o/r --body-file " + path}}
+            for body, expected in ((user, None), (user.replace("## Checklist", "word " * 100), "120 words")):
+                with open(path, "w") as f:
+                    f.write(body)
+                reason = deny_reason(data)
+                self.assertIsNone(reason) if expected is None else self.assertIn(expected, reason)
+
     def test_ticked_issue_box_needs_an_issue_link(self):
         """A ticked "I linked any relevant issues" box is wrong without `#N` or an issue URL in the body."""
         box = "- [x] I linked any relevant issues using [syntax](https://x/#notes) like `closes #1234` in Summary.\n"
