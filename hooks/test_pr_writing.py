@@ -6,6 +6,12 @@ from pr_writing import brief_problem, brief_warning, ticked_issue_box_without_is
 
 
 class PrWritingTest(unittest.TestCase):
+    def test_brief_pointing_to_notes_file_is_denied(self):
+        """A 300-character brief naming /tmp/s/facts.md passed the cap and the writer copied every fact (PR 11034)."""
+        brief = lambda text: brief_problem({"subagent_type": "pr-writer", "prompt": text + " no player-visible change"})
+        self.assertIn("notes file", brief("Repo o/r, branch b, base main. Facts: /tmp/s/facts.md"))
+        self.assertIsNone(brief("Repo o/r, branch b, base main. Diff: git -C /w/b diff upstream/main..."))
+
     def test_ticked_issue_box_needs_an_issue_link(self):
         """A ticked "I linked any relevant issues" box is wrong without `#N` or an issue URL in the body."""
         box = "- [x] I linked any relevant issues using [syntax](https://x/#notes) like `closes #1234` in Summary.\n"

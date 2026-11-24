@@ -137,6 +137,7 @@ def body_problem(command):
 CAPTURE = re.compile(r"https?://\S*(?:asciinema\.org/a/|\.webp\b)")
 NO_VISIBLE_CHANGE = "no player-visible change"
 EXISTING_PR = re.compile(r"(?i)\bPR\s*#?\d+")
+NOTES_FILE = re.compile(r"(?:^|\s)/\S+\.(?:md|txt)\b")
 DICTATED = re.compile(r"(?i)\badd\s+(?:one\s+|a\s+|an\s+)?(?:short\s+)?(?:line|sentence|note|paragraph)\b")
 NO_CAPTURES = (
     "A `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp) "
@@ -162,6 +163,11 @@ def brief_problem(tool_input):
         return None
     if lacks_captures(tool_input) and not EXISTING_PR.search(prompt):
         return NO_CAPTURES
+    if NOTES_FILE.search(prompt):
+        return (
+            f"A `{WRITER}` brief cannot point to a notes file: it carries the session story past the "
+            f"{BRIEF_LIMIT}-character cap. Put the few facts a reviewer needs in the brief itself."
+        )
     if DICTATED.search(prompt):
         return (
             "A `pr-writer` brief gives facts, never sentences to add. Name the fact; the writer decides whether a "
