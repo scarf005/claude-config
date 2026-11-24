@@ -9,6 +9,11 @@ class LocalBenchTest(unittest.TestCase):
     def test_profile_run_is_denied(self):
         self.assertIsNotNone(violation("PROFILE_WAIT_MINUTES=600 ./head-bin -w NoTests profile_wait"))
 
+    def test_timed_or_cold_build_is_denied(self):
+        self.assertIsNotNone(violation('/usr/bin/time -o t -f "%U" ninja -C out -j 8 cataclysm-bn'))
+        self.assertIsNotNone(violation("time cmake --build out/build/ci-curses"))
+        self.assertIsNotNone(violation("export CCACHE_DISABLE=1\nninja -C out"))
+
     def test_hyperfine_and_perf_are_denied(self):
         self.assertIsNotNone(violation("hyperfine 'cmake --build build'"))
         self.assertIsNotNone(violation("perf record -g ./cata_test-tiles -w NoTests '[map]'"))
