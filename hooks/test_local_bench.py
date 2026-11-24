@@ -13,6 +13,7 @@ class LocalBenchTest(unittest.TestCase):
         self.assertIsNotNone(violation('/usr/bin/time -o t -f "%U" ninja -C out -j 8 cataclysm-bn'))
         self.assertIsNotNone(violation("time cmake --build out/build/ci-curses"))
         self.assertIsNotNone(violation("export CCACHE_DISABLE=1\nninja -C out"))
+        self.assertIsNone(violation("cat >> notes.md <<'EOF'\n- hook denies CCACHE_DISABLE=1 runs\nEOF"))
 
     def test_hyperfine_and_perf_are_denied(self):
         self.assertIsNotNone(violation("hyperfine 'cmake --build build'"))

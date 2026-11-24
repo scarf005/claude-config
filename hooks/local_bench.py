@@ -13,7 +13,7 @@ from private_profile import script_texts
 
 BENCH = re.compile(
     r"\bhyperfine\b|\bperf\s+(?:stat|record)\b|\bprofile_(?:wait|walk)\b|\bPROFILE_WAIT\w*=|"
-    r"--benchmark-samples|\[\.?benchmark\]|\bCCACHE_DISABLE=1\b|"
+    r"--benchmark-samples|\[\.?benchmark\]|^\s*(?:export\s+|env\s+)?CCACHE_DISABLE=1\b|"
     r"(?:/usr/bin/time|^\s*time)\b.*\b(?:ninja|cmake\s+--build|make)\b"
 )
 READ = re.compile(r"^\s*(?:rg|cat|sed|git|gh|ls|fd|head|tail|wc|echo)\b")
