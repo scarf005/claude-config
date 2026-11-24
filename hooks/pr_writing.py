@@ -136,6 +136,22 @@ def body_problem(command):
 
 CAPTURE = re.compile(r"https?://\S*(?:asciinema\.org/a/|\.webp\b)")
 NO_VISIBLE_CHANGE = "no player-visible change"
+EXISTING_PR = re.compile(r"(?i)\bPR\s*#?\d+")
+NO_CAPTURES = (
+    "A `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp) "
+    f"with what each shows, or the words `{NO_VISIBLE_CHANGE}` when the player sees nothing new."
+)
+
+
+def lacks_captures(tool_input):
+    prompt = tool_input.get("prompt", "")
+    return (tool_input.get("subagent_type") == WRITER and bool(re.search(r"\bbase\b", prompt))
+            and not CAPTURE.search(prompt) and NO_VISIBLE_CHANGE not in prompt.lower())
+
+
+def brief_warning(tool_input):
+    """Return a warning for a brief that edits an existing PR without captures, else None."""
+    return NO_CAPTURES if lacks_captures(tool_input) and EXISTING_PR.search(tool_input["prompt"]) else None
 
 
 def brief_problem(tool_input):
@@ -143,11 +159,8 @@ def brief_problem(tool_input):
     prompt = tool_input.get("prompt", "")
     if tool_input.get("subagent_type") != WRITER:
         return None
-    if re.search(r"\bbase\b", prompt) and not CAPTURE.search(prompt) and NO_VISIBLE_CHANGE not in prompt.lower():
-        return (
-            "A new-PR `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp) "
-            f"with what each shows, or the words `{NO_VISIBLE_CHANGE}` when the player sees nothing new."
-        )
+    if lacks_captures(tool_input) and not EXISTING_PR.search(prompt):
+        return NO_CAPTURES
     if len(prompt) <= BRIEF_LIMIT:
         return None
     return (
@@ -179,7 +192,11 @@ def deny_reason(data):
 
 
 def main():
-    reason = deny_reason(json.load(sys.stdin))
+    data = json.load(sys.stdin)
+    reason = deny_reason(data)
+    warning = brief_warning(data.get("tool_input", {})) if data.get("tool_name") == "Agent" else None
+    if warning and not reason:
+        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": warning}}))
     if reason:
         print(json.dumps({
             "hookSpecificOutput": {

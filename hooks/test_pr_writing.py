@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from pr_writing import brief_problem, ticked_issue_box_without_issue, deny_reason, skill_loaded, writes_body, writes_pr
+from pr_writing import brief_problem, brief_warning, ticked_issue_box_without_issue, deny_reason, skill_loaded, writes_body, writes_pr
 
 
 class PrWritingTest(unittest.TestCase):
@@ -141,6 +141,14 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNotNone(brief_problem(brief))
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. Before https://x/y/before.webp, https://asciinema.org/a/1"}))
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. No player-visible change."}))
+
+    def test_existing_pr_brief_without_captures_only_warns(self):
+        """Editing PR #5 (base main) without captures is allowed with a warning; a new PR is still denied."""
+        edit = {"subagent_type": "pr-writer", "prompt": "Repo a/b, PR #5 (base main). Drop one word."}
+        self.assertIsNone(brief_problem(edit))
+        self.assertIsNotNone(brief_warning(edit))
+        self.assertIsNone(brief_warning(edit | {"prompt": "PR #5, base main. No player-visible change."}))
+        self.assertIsNone(brief_warning({"subagent_type": "pr-writer", "prompt": "Repo a/b, base main, head x."}))
 
     def test_skill_load_is_read_from_transcript(self):
         with tempfile.NamedTemporaryFile("w", suffix=".jsonl") as f:
