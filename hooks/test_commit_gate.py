@@ -1,7 +1,11 @@
+import io
 import json
+import tempfile
 import unittest
+from contextlib import redirect_stdout
+from unittest import mock
 
-from commit_gate import COMMENT, COMMIT, has, needs_humanizer, needs_review
+from commit_gate import COMMIT, has, main, needs_humanizer, needs_review
 
 
 def use(name, **args):
@@ -57,11 +61,22 @@ class CommitGateTest(unittest.TestCase):
         # Compaction keeps loaded skills in context.
         self.assertFalse(needs_humanizer([skill, compact, EDIT]))
 
-    def test_added_comment_lines_match(self):
-        for line in ["+// x", "+    /// x", "+/* x", "+ * x", "+# x", "+-- x"]:
-            self.assertTrue(COMMENT.search(line), line)
-        for line in ["+++ b/a.cpp", "+#include <x>", "+int a; ", "-// x", " // x"]:
-            self.assertFalse(COMMENT.search(line), line)
+    def test_denies_commit_in_other_repo_without_humanizer(self):
+        # Edit README in ../other, review, then `cd ../other && git commit`: deny, though session cwd has no diff.
+        def decision(lines):
+            with tempfile.NamedTemporaryFile("w", suffix=".jsonl") as f:
+                f.write("\n".join(lines))
+                f.flush()
+                stdin = json.dumps({"tool_input": {"command": "cd ../other && git commit -m x"},
+                                    "transcript_path": f.name, "cwd": "/nonexistent"})
+                out = io.StringIO()
+                with mock.patch("sys.stdin", io.StringIO(stdin)), redirect_stdout(out):
+                    main()
+            return out.getvalue()
+
+        readme = use("Write", file_path="../other/README.md")
+        self.assertIn("humanizer", decision([readme, STAT]))
+        self.assertEqual("", decision([readme, use("Skill", skill="humanizer"), STAT]))
 
 
 if __name__ == "__main__":
