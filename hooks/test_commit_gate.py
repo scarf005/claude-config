@@ -35,10 +35,15 @@ class CommitGateTest(unittest.TestCase):
     def test_measurement_after_last_edit_allows_commit(self):
         for cmd in ['rg "sed -i" docs', "make 2>&1 > /dev/null", "echo 1 -> 3", "run > /tmp/log"]:
             self.assertFalse(needs_review([EDIT, STAT, use("Bash", command=cmd)]), cmd)
-        self.assertFalse(needs_review([EDIT, use("Bash", command="git --no-pager diff --shortstat"),
+        self.assertFalse(needs_review([EDIT, use("Bash", command="git --no-pager diff --shortstat main..."),
                                        use("Bash", command="git log -p main..")]))
-        self.assertFalse(needs_review([EDIT, use("Bash", command="git diff --cached --shortstat"),
+        self.assertFalse(needs_review([EDIT, use("Bash", command="git diff --shortstat upstream/main...HEAD"),
                                        use("Bash", command="git -C /r show HEAD")]))
+
+    def test_shortstat_needs_the_whole_branch(self):
+        for cmd in ["git diff --shortstat", "git diff --cached --shortstat", "git diff --shortstat HEAD",
+                    "git diff --shortstat HEAD~1...", "git diff --shortstat @{u}..."]:
+            self.assertTrue(needs_review([EDIT, use("Bash", command=cmd), STAT.replace("--shortstat", "")]), cmd)
         self.assertFalse(needs_review(["not json", "123", '{"type": "assistant", "message": "x"}',
                                        use("Bash", command=["not", "str"])]))
 

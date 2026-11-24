@@ -14,7 +14,8 @@ import sys
 GIT = (r"^\s*(?:\(\s*|(?:env|command|exec)\s+|\w+=\S*\s+|(?:ba|z|fi)?sh\s+-c\s+['\"])*git\s+"
        r"(?:(?:-[Cc]\s+(?:'[^']*'|\"[^\"]*\"|[^\s'\"])+|--[\w-]+(?:=\S+)?)\s+)*")
 COMMIT = re.compile(GIT + r"commit(?![-\w])")
-SHORTSTAT = re.compile(GIT + r"diff\b.*--shortstat\b")
+# The whole branch against its base (`main...`); HEAD-relative and staged-only diffs hide the earlier commits.
+SHORTSTAT = re.compile(GIT + r"diff\b(?=.*--shortstat\b)(?=.*\s(?!HEAD\b|@)[^\s-]\S*\.\.\.)")
 SUMMARY_ONLY = r"--(?:shortstat|stat|numstat|name-only|name-status|quiet|exit-code|check|no-patch|summary|raw|compact-summary)\b|\s-s\b|\S:\S"
 PATCH = re.compile(GIT + r"(?:(?:diff|show)\b(?!.*(?:" + SUMMARY_ONLY + r"))|log\b.*\s(?:-p|--patch)\b)")
 SHELL_EDIT = re.compile(r"^\s*(?:sed\s+-i|perl\s+-\w*i|patch|tee|cp|mv)\b|(?<![-=>&])>>?\s*(?!/dev/|/tmp/|&)\S|" + GIT
