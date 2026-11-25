@@ -38,7 +38,8 @@ targets. Embedded mode: final text only. Code-text mode: change only names, stri
 - Rewrite every tell: summary sections restating the intro, closers naming only a reference or the point, meanings the
   source does not state, bold-label bullets.
 - Bug reports: symptom and related link first, then repro, environment, logs. Performance PRs and commits: before/after
-  table with a speedup column (`3.08x (-68%)`). Images committed to a repository: WebP quality 50-75.
+  table with a speedup column (`3.08x (-68%)`). Images committed to a repository: WebP quality 50-75,
+  terminal captures lossless (`gui-capture`).
 ## Patterns
 Before the first rewrite in a session, read `references/patterns.md` (hook `prose_gate.py`) and follow its How to work
 steps. Text patched one flagged phrase at a time still reads as machine text. The file has complete word and phrase
