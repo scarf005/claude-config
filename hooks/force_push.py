@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: deny a force-push to a default branch (main, master), or to a branch whose open PR has reviews.
+"""PreToolUse hook: deny a force-push to a default branch (main, master), or to a branch whose open PR is approved.
 
 A repository allows default-branch force-push with `git config claude.forcePushDefaultBranch true`, or only to
 one remote repository with `git config claude.forcePushDefaultBranch OWNER/REPO`.
-A force-push that dismisses reviews needs the user's approval, then `CLAUDE_REVIEWED_PUSH_OK=1` in the command.
+A force-push that dismisses an approval needs the user's approval, then `CLAUDE_REVIEWED_PUSH_OK=1` in the command.
+Change requests, comments and approvals on a conflicting PR do not block.
 The repository is the `git -C` path, else a leading `cd PATH`, else the session's working directory.
 """
 import json
@@ -29,18 +30,27 @@ def remote_slug(repo, remote):
     return m.group(1) if m else None
 
 
+def approvers(prs):
+    """Logins with an approval that a force-push dismisses.
+
+    GitHub dismisses only approvals. Change requests and comments stay. A conflicting PR cannot merge, so its
+    approval is void until the branch is rebased.
+    """
+    return [r["author"]["login"] for pr in prs if pr.get("mergeable") != "CONFLICTING"
+            for r in pr["reviews"] if r["state"] == "APPROVED"]
+
+
 def reviewers(repo, remote, branch):
-    """Logins of reviews on the open PR with head `branch` in the remote's repository; None if unknown."""
+    """`approvers` of the open PR with head `branch` in the remote's repository; None if unknown."""
     slug = remote_slug(repo, remote)
     if not slug:
         return []
     try:
         out = subprocess.run(["gh", "pr", "list", "-R", slug, "--head", branch, "--state", "open", "--json",
-                              "reviews", "-q", "[.[].reviews[] | select(.state != \"DISMISSED\") | .author.login]"],
-                             capture_output=True, text=True, timeout=4)
+                              "reviews,mergeable"], capture_output=True, text=True, timeout=4)
     except subprocess.TimeoutExpired:
         return None
-    return json.loads(out.stdout) if out.returncode == 0 and out.stdout.strip() else None
+    return approvers(json.loads(out.stdout)) if out.returncode == 0 and out.stdout.strip() else None
 
 
 def destinations(args):
@@ -49,7 +59,7 @@ def destinations(args):
 
 
 def reviewed(command, cwd, lookup=reviewers):
-    """(branch, logins) of the first force-pushed branch with reviews, or (branch, None) when unknown."""
+    """(branch, logins) of the first force-pushed branch with approvals, or (branch, None) when unknown."""
     if "CLAUDE_REVIEWED_PUSH_OK=1" in command:
         return None
     repo = cwd
@@ -92,7 +102,7 @@ def main():
         print(json.dumps({"hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": f"Force-pushing {branch} dismisses reviews on its open PR by {who}. "
+            "permissionDecisionReason": f"Force-pushing {branch} dismisses approvals on its open PR by {who}. "
                                         "Ask the user first; after approval add CLAUDE_REVIEWED_PUSH_OK=1 to the command.",
         }}))
         return

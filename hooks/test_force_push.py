@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from force_push import reviewed, violation
+from force_push import approvers, reviewed, violation
 
 
 def only(*repos):
@@ -55,6 +55,14 @@ class ForcePushTest(unittest.TestCase):
         self.assertIsNone(reviewed("git push -f upstream feat/y", "/r", lookup))
         self.assertIsNone(reviewed("git push upstream feat/x", "/r", lookup))
         self.assertIsNone(reviewed("CLAUDE_REVIEWED_PUSH_OK=1 git push -f upstream feat/x", "/r", lookup))
+
+    def test_only_approvals_on_a_mergeable_pr_count(self):
+        """GitHub dismisses only approvals on a push. A conflicting PR cannot merge, so its approval is void."""
+        review = lambda login, state: {"author": {"login": login}, "state": state}
+        self.assertEqual(approvers([{"mergeable": "MERGEABLE", "reviews": [review("a", "APPROVED")]}]), ["a"])
+        self.assertEqual(approvers([{"mergeable": "MERGEABLE", "reviews": [
+            review("a", "CHANGES_REQUESTED"), review("b", "COMMENTED"), review("c", "DISMISSED")]}]), [])
+        self.assertEqual(approvers([{"mergeable": "CONFLICTING", "reviews": [review("a", "APPROVED")]}]), [])
 
 
 if __name__ == "__main__":
