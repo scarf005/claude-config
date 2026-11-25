@@ -174,6 +174,12 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. Before https://x/y/before.webp, https://asciinema.org/a/1"}))
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. No player-visible change."}))
 
+    def test_webp_without_asciinema_needs_tiles(self):
+        """A brief with only .webp URLs is denied unless it names a tiles capture, which has no terminal recording."""
+        brief = {"subagent_type": "pr-writer", "prompt": "base main. Before https://x/before.webp popup."}
+        self.assertIsNotNone(brief_problem(brief))
+        self.assertIsNone(brief_problem(brief | {"prompt": brief["prompt"] + " Tiles build."}))
+
     def test_existing_pr_brief_without_captures_only_warns(self):
         """Editing PR #5 (base main) without captures is allowed with a warning; a new PR is still denied."""
         edit = {"subagent_type": "pr-writer", "prompt": "Repo a/b, PR #5 (base main). Drop one word."}

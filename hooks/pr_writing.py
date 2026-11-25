@@ -146,21 +146,23 @@ def body_problem(command):
     return None
 
 
-CAPTURE = re.compile(r"https?://\S*(?:asciinema\.org/a/|\.webp\b)")
+ASCIINEMA = re.compile(r"https?://\S*asciinema\.org/a/")
+WEBP = re.compile(r"https?://\S*\.webp\b")
 NO_VISIBLE_CHANGE = "no player-visible change"
 EXISTING_PR = re.compile(r"(?i)\bPR\s*#?\d+")
 NOTES_FILE = re.compile(r"(?:^|\s)/\S+\.(?:md|txt)\b")
 DICTATED = re.compile(r"(?i)\badd\s+(?:one\s+|a\s+|an\s+)?(?:short\s+)?(?:line|sentence|note|paragraph)\b")
 NO_CAPTURES = (
-    "A `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp) "
-    f"with what each shows, or the words `{NO_VISIBLE_CHANGE}` when the player sees nothing new."
+    "A `pr-writer` brief needs before/after capture URLs (asciinema.org link and animated .webp; .webp alone only "
+    f"for a tiles capture) with what each shows, or the words `{NO_VISIBLE_CHANGE}` when the player sees nothing new."
 )
 
 
 def lacks_captures(tool_input):
     prompt = tool_input.get("prompt", "")
     return (tool_input.get("subagent_type") == WRITER and bool(re.search(r"\bbase\b", prompt))
-            and not CAPTURE.search(prompt) and NO_VISIBLE_CHANGE not in prompt.lower())
+            and not ASCIINEMA.search(prompt) and not (WEBP.search(prompt) and re.search(r"(?i)\btiles\b", prompt))
+            and NO_VISIBLE_CHANGE not in prompt.lower())
 
 
 def brief_warning(tool_input):
