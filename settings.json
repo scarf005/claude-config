@@ -26,7 +26,9 @@
       "Bash(gh run list:*)",
       "Bash(gio trash:*)",
       "Bash(git gtr clean:*)",
-      "EnterWorktree"
+      "EnterWorktree",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [
       "Bash(*DROP DATABASE*)",
