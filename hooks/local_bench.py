@@ -7,6 +7,7 @@ Checks the command and any script file it names.
 """
 import json
 import re
+import shlex
 import sys
 
 from private_profile import script_texts
