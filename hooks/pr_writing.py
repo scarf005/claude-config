@@ -175,6 +175,8 @@ def brief_problem(tool_input):
     prompt = tool_input.get("prompt", "")
     if tool_input.get("subagent_type") != WRITER:
         return None
+    if tool_input.get("model", "opus") != "opus":
+        return f"Run `{WRITER}` on its own model: leave out `model` (or pass `opus`)."
     if lacks_captures(tool_input) and not EXISTING_PR.search(prompt):
         return NO_CAPTURES
     if NOTES_FILE.search(prompt):

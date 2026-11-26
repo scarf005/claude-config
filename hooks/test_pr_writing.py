@@ -154,6 +154,13 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNotNone(deny_reason(call | {"agent_type": "implementer"}))
         self.assertIsNone(deny_reason(call | {"agent_type": "pr-writer"}))
 
+    def test_pr_writer_runs_on_opus(self):
+        """A `pr-writer` call with `model: sonnet` is denied; no `model` or `model: opus` passes."""
+        brief = {"subagent_type": "pr-writer", "prompt": "Edit PR #5. fixes #4."}
+        self.assertIsNotNone(brief_problem(brief | {"model": "sonnet"}))
+        self.assertIsNone(brief_problem(brief | {"model": "opus"}))
+        self.assertIsNone(brief_problem(brief))
+
     def test_brief_length_is_capped(self):
         """A `pr-writer` brief over 600 characters is denied, so the parent cannot pass its session story."""
         self.assertIsNone(brief_problem({"subagent_type": "pr-writer", "prompt": "Edit PR #5. fixes #4."}))
