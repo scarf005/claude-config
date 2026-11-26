@@ -42,6 +42,10 @@ class LocalBenchTest(unittest.TestCase):
         self.assertIsNotNone(violation("cd out && time ninja cataclysm-bn"))
         self.assertIsNotNone(violation("bash -c './head-bin profile_walk'"))
 
+    def test_allows_harness_names_in_heredoc_data(self):
+        self.assertIsNone(violation("cat > wf.yml <<'EOF'\n  run: ./cata_test -w NoTests profile_walk\nEOF"))
+        self.assertIsNotNone(violation("bash <<'EOF'\n./head-bin profile_walk\nEOF"))
+
 
 if __name__ == "__main__":
     unittest.main()

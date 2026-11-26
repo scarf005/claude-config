@@ -62,6 +62,25 @@ class CmakePresetTest(unittest.TestCase):
             "cmake --preset linux-full -DCMAKE_CXX_COMPILER=/usr/bin/clang++"))
         self.assertIsNone(preset_violation("cmake --build --preset linux-full --target x"))
 
+    def test_allows_preset_text_in_searches_and_heredoc_data(self):
+        from cmake_preset import violation as preset_violation
+        self.assertIsNone(preset_violation("cd hooks && rg -n 'ci-curses|cmake --preset' *.py | head"))
+        self.assertIsNone(preset_violation(
+            "cat > wf.yml <<'EOF'\n  run: |\n    cmake --preset ci-curses -DTILES=OFF\nEOF\necho ok"))
+
+    def test_denies_preset_configure_inside_compound_lines_and_shell_heredocs(self):
+        from cmake_preset import violation as preset_violation
+        self.assertIsNotNone(preset_violation("cd out && cmake --preset linux-full -DTILES=ON"))
+        self.assertIsNotNone(preset_violation("if true; then cmake --preset linux-full; fi"))
+        self.assertIsNotNone(preset_violation("bash <<'EOF'\ncmake --preset linux-full\nEOF"))
+        with tempfile.TemporaryDirectory() as tmp:
+            script = Path(tmp) / "build.py"
+            script.write_text('subprocess.run("cmake --preset linux-full", shell=True)\n')
+            self.assertIsNotNone(preset_violation(f"python3 {script}"))
+        self.assertIsNone(preset_violation(
+            "PATH=/usr/bin:$PATH cmake --preset linux-full -DCMAKE_C_COMPILER=/usr/bin/clang \\\n"
+            "  -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -U CMAKE_RUNTIME_OUTPUT_DIRECTORY"))
+
 
 if __name__ == "__main__":
     unittest.main()
