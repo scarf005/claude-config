@@ -10,7 +10,8 @@ import shlex
 import sys
 
 STACK = re.compile(r"\bgh\s+stack\s+(?:link|init)\b(.*)")
-VALUED = {"--base", "--remote"}
+VALUED = {"--base", "-b", "--remote", "--repo", "-R"}
+REDIRECT = re.compile(r"\d*[<>]+(&?\S*)$")
 APPROVED = re.compile(r"\bSTACK_SPLIT_OK=1\b")
 LIMIT = 3
 
@@ -26,6 +27,8 @@ def members(args):
             skip = False
         elif token in VALUED:
             skip = True
+        elif m := REDIRECT.match(token):
+            skip = not m.group(1)
         elif not token.startswith("-"):
             found.append(token)
     return found
