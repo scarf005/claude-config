@@ -39,6 +39,19 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNone(deny_reason(data("perf: make waiting faster with fire nearby (up to 10x faster)")))
         self.assertIsNone(deny_reason(data("fix: stop fire from spreading")))
 
+    def test_perf_body_without_provenance_label_and_with_median_of_5(self):
+        """PR 11049 captioned its bars `(fork CI)` and used a median of 9 rounds; the user asked for 3-5 and no label."""
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "tmp.Ab3dE5gH7j")
+            data = {"tool_name": "Bash", "agent_type": "pr-writer",
+                    "tool_input": {"command": "gh pr edit 5 -R o/r --body-file " + path}}
+            for body, expected in (("ms/turn (fork CI)", "fork CI"), ("ms/turn, median of 9", "median of 9"),
+                                   ("ms/turn, median of 5", None)):
+                with open(path, "w") as f:
+                    f.write("fixes #1\n" + body)
+                reason = deny_reason(data)
+                self.assertIsNone(reason) if expected is None else self.assertIn(expected, reason)
+
     def test_ticked_issue_box_needs_an_issue_link(self):
         """A ticked "I linked any relevant issues" box is wrong without `#N` or an issue URL in the body."""
         box = "- [x] I linked any relevant issues using [syntax](https://x/#notes) like `closes #1234` in Summary.\n"

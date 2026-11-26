@@ -163,6 +163,10 @@ def body_problem(command):
             return (
                 f"{path} ticks the linked-issue checkbox, but the body links no issue. Untick it or link the issue."
             )
+        if "fork CI" in body:
+            return f"{path} labels a result `fork CI`. Name what it shows, not where it ran."
+        if (rounds := re.search(r"(?i)\bmedian of (\d+)", body)) and int(rounds[1]) > 5:
+            return f"{path} reports a median of {rounds[1]}. Benchmark rounds are 3 to 5; rerun with 5."
         if (words := prose_words(body)) > PROSE_LIMIT:
             return (
                 f"{path} has {words} words of prose; 90% of the user's own PRs stay within {PROSE_LIMIT} words. "
