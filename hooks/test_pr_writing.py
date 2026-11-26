@@ -31,6 +31,14 @@ class PrWritingTest(unittest.TestCase):
                 reason = deny_reason(data)
                 self.assertIsNone(reason) if expected is None else self.assertIn(expected, reason)
 
+    def test_perf_title_without_speedup_is_denied(self):
+        """PR 11049 got `perf: skip time while a fire burns`; the user wanted the player action and the speedup."""
+        data = lambda title: {"tool_name": "Bash", "agent_type": "pr-writer",
+                              "tool_input": {"command": f"gh pr edit 5 -R o/r --title '{title}'"}}
+        self.assertIn("measured speedup", deny_reason(data("perf: skip time while a fire burns")))
+        self.assertIsNone(deny_reason(data("perf: make waiting faster with fire nearby (up to 10x faster)")))
+        self.assertIsNone(deny_reason(data("fix: stop fire from spreading")))
+
     def test_ticked_issue_box_needs_an_issue_link(self):
         """A ticked "I linked any relevant issues" box is wrong without `#N` or an issue URL in the body."""
         box = "- [x] I linked any relevant issues using [syntax](https://x/#notes) like `closes #1234` in Summary.\n"

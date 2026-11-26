@@ -106,6 +106,31 @@ def body_files(command):
     return paths
 
 
+PERF_SPEEDUP = re.compile(r"\b\d+(?:\.\d+)?x\b")
+
+
+def titles(command):
+    """Return the `--title`/`-t` values of `gh pr` writes in a command."""
+    found = []
+    for tokens in token_segments(command):
+        if PR_WRITE.search(" ".join(tokens)):
+            values = iter(tokens)
+            found += [next(values, "") for flag in values if flag in ("--title", "-t")]
+            found += [t.split("=", 1)[1] for t in tokens if t.startswith("--title=")]
+    return found
+
+
+def title_problem(command):
+    """Return a deny reason for a `perf` title without a measured speedup such as `10x`, else None."""
+    for title in titles(command):
+        if re.match(r"perf\b", title) and not PERF_SPEEDUP.search(title):
+            return (
+                f"`{title}` names the code change. A perf title names what the player does and the measured "
+                "speedup, like `perf: make waiting faster with fire nearby (up to 10x faster)`."
+            )
+    return None
+
+
 def prose_words(body):
     return len(re.findall(r"[A-Za-z][A-Za-z'-]*", NOT_PROSE.sub("", body)))
 
@@ -206,7 +231,7 @@ def deny_reason(data):
     command = tool_input.get("command", "")
     if writes_pr(command):
         if data.get("agent_type") == WRITER:
-            return body_problem(command)
+            return title_problem(command) or body_problem(command)
         return (
             f"Write PR titles and bodies only through the `{WRITER}` agent: Agent with subagent_type `{WRITER}` and a "
             f"brief within {BRIEF_LIMIT} characters. Do not reach the same effect through another command."
