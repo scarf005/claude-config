@@ -33,6 +33,15 @@ class LocalBenchTest(unittest.TestCase):
         self.assertIsNone(violation("git commit -m 'test: add profile_wait harness'"))
         self.assertIsNone(violation("./cata_test-tiles -w NoTests '[map]'"))
 
+    def test_allows_search_after_other_commands(self):
+        self.assertIsNone(violation("cd repo && rg -l 'profile_walk' tests 2>/dev/null | head"))
+        self.assertIsNone(violation("cd repo; git log --all --oneline -S profile_walk | head -5"))
+
+    def test_denies_run_after_a_search(self):
+        self.assertIsNotNone(violation("rg -l x tests && ./head-bin -w NoTests profile_walk"))
+        self.assertIsNotNone(violation("cd out && time ninja cataclysm-bn"))
+        self.assertIsNotNone(violation("bash -c './head-bin profile_walk'"))
+
 
 if __name__ == "__main__":
     unittest.main()
