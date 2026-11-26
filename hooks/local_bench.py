@@ -21,13 +21,30 @@ READ = re.compile(r"^\s*(?:rg|cat|sed|git|gh|ls|fd|head|tail|wc|echo)\b")
 APPROVED = re.compile(r"\bLOCAL_BENCH_OK=1\b")
 
 
+def commands(line):
+    """Split a shell line at ; && || | into commands, so `rg profile_walk` is checked as one search."""
+    lexer = shlex.shlex(line, posix=True, punctuation_chars=";&|")
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError:
+        return [line]
+    parts = [[]]
+    for token in tokens:
+        if token and set(token) <= set(";&|"):
+            parts.append([])
+        else:
+            parts[-1].append(token)
+    return [" ".join(part) for part in parts if part]
+
+
 def violation(command):
     texts = [command, *script_texts(command)]
     if any(APPROVED.search(text) for text in texts):
         return None
     for text in texts:
         for line in text.splitlines():
-            if BENCH.search(line) and not READ.search(line):
+            if any(BENCH.search(part) and not READ.search(part) for part in commands(line)):
                 return line
     return None
 
