@@ -165,6 +165,11 @@ def body_problem(command):
             )
         if "fork CI" in body:
             return f"{path} labels a result `fork CI`. Name what it shows, not where it ran."
+        if re.search(r"(?i)https?://\S*/[^\s/]*bars[^\s/]*\.webp\b", body):
+            return (
+                f"{path} links a bars-only animation. Show each scene as a game recording with a bar under each "
+                "side, and put the numbers in the table."
+            )
         if (rounds := re.search(r"(?i)\bmedian of (\d+)", body)) and int(rounds[1]) > 5:
             return f"{path} reports a median of {rounds[1]}. Benchmark rounds are 3 to 5; rerun with 5."
         if (words := prose_words(body)) > PROSE_LIMIT:
