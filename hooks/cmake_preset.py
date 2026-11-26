@@ -9,7 +9,7 @@ import json
 import re
 import sys
 
-from private_profile import script_texts
+from private_profile import READERS, program, script_texts, shell_commands
 
 CONFIGURE = re.compile(r"cmake\s+(?:-S\s+\S+\s+)?--preset\b")
 ABSOLUTE = re.compile(r"-DCMAKE_CXX_COMPILER=/")
@@ -18,8 +18,11 @@ UNSET_OUTPUT = re.compile(r"-U\s*CMAKE_RUNTIME_OUTPUT_DIRECTORY")
 
 
 def violation(command):
+    """First configure without absolute compilers; searches and heredoc file data pass."""
     return next(
-        (text for text in [command, *script_texts(command)] if CONFIGURE.search(text) and not (ABSOLUTE.search(text) and UNSET_OUTPUT.search(text))),
+        (part for text in [command, *script_texts(command)] for part in shell_commands(text)
+         if program(part) not in READERS and CONFIGURE.search(part)
+         and not (ABSOLUTE.search(part) and UNSET_OUTPUT.search(part))),
         None,
     )
 

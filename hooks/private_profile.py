@@ -15,6 +15,56 @@ from pathlib import Path
 LAUNCH = re.compile(r"\bgamescope\b(?!ctl)|\bxvfb-run\b|--userdir\b|--world\b")
 ISOLATED = re.compile(r"--configdir\b|\bXDG_CONFIG_HOME=|(?<![\w$])HOME=")
 SCRIPT_SUFFIXES = {".rs", ".sh", ".py", ".fish", ".ts", ".js"}
+SHELLS = {"bash", "sh", "dash", "zsh", "fish"}
+READERS = {"rg", "cat", "sed", "git", "gh", "ls", "fd", "head", "tail", "wc", "echo", "printf"}
+WRAPPERS = {"env", "exec", "time", "nice", "command", "sudo", "then", "do", "else", "{", "(", "!"}
+ASSIGNMENT = re.compile(r"^[A-Za-z_]\w*=")
+HEREDOC = re.compile(r"(?<!<)<<(?!<)-?\s*(['\"]?)([A-Za-z_]\w*)\1")
+
+
+def split_commands(line):
+    """Split a shell line at ; && || | into commands, so `rg profile_walk` is checked as one search."""
+    lexer = shlex.shlex(line, posix=True, punctuation_chars=";&|")
+    lexer.whitespace_split = True
+    try:
+        tokens = list(lexer)
+    except ValueError:
+        return [line]
+    parts = [[]]
+    for token in tokens:
+        if token and set(token) <= set(";&|"):
+            parts.append([])
+        else:
+            parts[-1].append(token)
+    return [" ".join(part) for part in parts if part]
+
+
+def program(command):
+    """Name of the program a command runs, past `VAR=value` and wrapper words: `PATH=x cmake ..` gives cmake."""
+    for word in command.split():
+        if not (ASSIGNMENT.match(word) or word in WRAPPERS):
+            return Path(word).name
+    return ""
+
+
+def shell_commands(text):
+    """Yield every command of a shell text. A heredoc body counts only when a shell reads it."""
+    lines = text.replace("\\\n", " ").splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        parts = split_commands(line)
+        yield from parts
+        i += 1
+        heredoc = HEREDOC.search(line)
+        if not heredoc:
+            continue
+        shell_input = any("<<" in part and program(part) in SHELLS for part in parts)
+        while i < len(lines) and lines[i].strip() != heredoc.group(2):
+            if shell_input:
+                yield from split_commands(lines[i])
+            i += 1
+        i += 1
 
 
 def script_texts(command):
