@@ -60,7 +60,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
   "skillOverrides": {
     "grill-me": "off",
     "ffmpeg": "off",
