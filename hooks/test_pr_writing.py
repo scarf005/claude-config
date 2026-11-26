@@ -39,14 +39,16 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNone(deny_reason(data("perf: make waiting faster with fire nearby (up to 10x faster)")))
         self.assertIsNone(deny_reason(data("fix: stop fire from spreading")))
 
-    def test_perf_body_without_provenance_label_and_with_median_of_5(self):
-        """PR 11049 captioned its bars `(fork CI)` and used a median of 9 rounds; the user asked for 3-5 and no label."""
+    def test_perf_body_without_provenance_label_bars_webp_and_with_median_of_5(self):
+        """PR 11049 captioned its bars `(fork CI)`, used a median of 9 rounds and a bars-only animation
+        (pr11046-bars.webp); the user asked for 3-5 rounds, no label, and only game recordings with bars."""
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "tmp.Ab3dE5gH7j")
             data = {"tool_name": "Bash", "agent_type": "pr-writer",
                     "tool_input": {"command": "gh pr edit 5 -R o/r --body-file " + path}}
             for body, expected in (("ms/turn (fork CI)", "fork CI"), ("ms/turn, median of 9", "median of 9"),
-                                   ("ms/turn, median of 5", None)):
+                                   ("![](https://x/pr11046-bars.webp)", "bars-only"),
+                                   ("![](https://x/pr11046-fire.webp) ms/turn, median of 5", None)):
                 with open(path, "w") as f:
                     f.write("fixes #1\n" + body)
                 reason = deny_reason(data)
