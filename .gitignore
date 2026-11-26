@@ -33,4 +33,4 @@
 !hooks/rm_guard.py
 !hooks/test_rm_guard.py
 !commands/
-!commands/persona.md
+!commands/voice.md
