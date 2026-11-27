@@ -18,8 +18,10 @@ COMMIT = re.compile(GIT + r"commit(?![-\w])")
 SHORTSTAT = re.compile(GIT + r"diff\b(?=.*--shortstat\b)(?=.*\s(?!HEAD\b|@)[^\s-]\S*\.\.\.)")
 SUMMARY_ONLY = r"--(?:shortstat|stat|numstat|name-only|name-status|quiet|exit-code|check|no-patch|summary|raw|compact-summary)\b|\s-s\b|\S:\S"
 PATCH = re.compile(GIT + r"(?:(?:diff|show)\b(?!.*(?:" + SUMMARY_ONLY + r"))|log\b.*\s(?:-p|--patch)\b)")
-SHELL_EDIT = re.compile(r"^\s*(?:sed\s+-i|perl\s+-\w*i|patch|tee|cp|mv)\b|(?<![-=>&])>>?\s*(?!/dev/|/tmp/|&)\S|" + GIT
-                        + r"(?:apply|am|checkout|restore|merge|cherry-pick|rebase|revert|stash\s+(?:pop|apply)|mv|rm)\b")
+# A commit segment is never an edit: its message may hold `<a> b` or `x > y`.
+SHELL_EDIT = re.compile(r"^(?!" + COMMIT.pattern[1:] + r").*?(?:"
+                        r"^\s*(?:sed\s+-i|perl\s+-\w*i|patch|tee|cp|mv)\b|(?<![-=>&])>>?\s*(?!/dev/|/tmp/|&)\S|" + GIT
+                        + r"(?:apply|am|checkout|restore|merge|cherry-pick|rebase|revert|stash\s+(?:pop|apply)|mv|rm)\b)")
 SEPARATOR = re.compile(r"&&|\|\||;|\||\n")
 EDITS = ("Edit", "MultiEdit", "Write", "NotebookEdit")
 HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?(.*?\n).*?^\s*\1\s*$", re.S | re.M)
