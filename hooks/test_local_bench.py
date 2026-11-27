@@ -25,8 +25,22 @@ class LocalBenchTest(unittest.TestCase):
             script.write_text("#!/bin/bash\n./head-bin -w NoTests profile_wait\n")
             self.assertIsNotNone(violation(f"systemd-run --user --wait {script}"))
 
-    def test_approved_run_is_allowed(self):
-        self.assertIsNone(violation("LOCAL_BENCH_OK=1 ./head-bin -w NoTests profile_wait"))
+    def test_gpu_path_run_is_allowed(self):
+        self.assertIsNone(violation("CATA_TEST_COMPUTE_ACCELERATION=gpu ./cata_test-tiles -w NoTests profile_walk"))
+        self.assertIsNone(violation("export CATA_TEST_COMPUTE_ACCELERATION=gpu\n./cata_test-tiles profile_walk"))
+        self.assertIsNone(violation("perf record -g ./cataclysm-bn-tiles --userdir u/ --configdir u/config/"))
+
+    def test_cpu_path_run_is_denied(self):
+        self.assertIsNotNone(violation("CATA_TEST_COMPUTE_ACCELERATION=cpu ./cata_test-tiles profile_walk"))
+        self.assertIsNotNone(violation("CATA_TEST_COMPUTE_ACCELERATION=$accel ./cata_test-tiles profile_walk"))
+        self.assertIsNotNone(violation("LOCAL_BENCH_OK=1 ./head-bin -w NoTests profile_wait"))
+
+    def test_reading_a_script_is_allowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            script = Path(tmp) / "hook.py"
+            script.write_text('"""Split commands, so `rg profile_walk` is one search."""\n')
+            self.assertIsNone(violation(f"sed -n 1,40p {script}"))
+            self.assertIsNotNone(violation(f"bash {script}"))
 
     def test_search_and_plain_tests_are_allowed(self):
         self.assertIsNone(violation("rg -n profile_wait tests/"))
