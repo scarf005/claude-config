@@ -30,6 +30,11 @@ class LocalBenchTest(unittest.TestCase):
         self.assertIsNone(violation("export CATA_TEST_COMPUTE_ACCELERATION=gpu\n./cata_test-tiles profile_walk"))
         self.assertIsNone(violation("perf record -g ./cataclysm-bn-tiles --userdir u/ --configdir u/config/"))
 
+    def test_attaching_to_a_running_process_is_allowed(self):
+        self.assertIsNone(violation("perf record -F 500 --call-graph dwarf,16384 -p $gp -o $u/perf.data > $u/perf.log"))
+        self.assertIsNone(violation("perf stat --pid=4242 -e cycles -- sleep 5"))
+        self.assertIsNotNone(violation("perf record -o p.data ./cata_test-tiles -w NoTests profile_walk"))
+
     def test_cpu_path_run_is_denied(self):
         self.assertIsNotNone(violation("CATA_TEST_COMPUTE_ACCELERATION=cpu ./cata_test-tiles profile_walk"))
         self.assertIsNotNone(violation("CATA_TEST_COMPUTE_ACCELERATION=$accel ./cata_test-tiles profile_walk"))

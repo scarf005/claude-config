@@ -3,8 +3,9 @@
 
 Other jobs share this machine, so local timings are skewed. Run benchmarks on GitHub CI. CI runners
 have no GPU, so allow a local run that sets CATA_TEST_COMPUTE_ACCELERATION=gpu or runs the game binary
-(default COMPUTE_ACCELERATION=auto). Check the command and every script that a non-reading command in
-it names.
+(default COMPUTE_ACCELERATION=auto). Allow perf attached to a running process (-p, --pid, -t, --tid):
+this hook already checked the command that started it. Check the command and every script that a
+non-reading command in it names.
 """
 import json
 import re
@@ -17,7 +18,10 @@ BENCH = re.compile(
     r"--benchmark-samples|\[\.?benchmark\]|^\s*(?:export\s+|env\s+)?CCACHE_DISABLE=1\b|"
     r"(?:/usr/bin/time|^\s*time)\b.*\b(?:ninja|cmake\s+--build|make)\b"
 )
-GPU_PATH = re.compile(r"\bCATA_TEST_COMPUTE_ACCELERATION=['\"]?gpu\b|\bcataclysm-bn-tiles\b")
+GPU_PATH = re.compile(
+    r"\bCATA_TEST_COMPUTE_ACCELERATION=['\"]?gpu\b|\bcataclysm-bn-tiles\b|"
+    r"\bperf\s+(?:stat|record)\b.*\s(?:-p|-t|--pid|--tid)(?:\s|=)"
+)
 GPU_EXPORT = re.compile(r"^\s*export\s.*\bCATA_TEST_COMPUTE_ACCELERATION=['\"]?gpu\b", re.M)
 
 
