@@ -19,7 +19,8 @@ only the brief and what you read yourself; that is on purpose. Do not ask for th
 3. Read the `pr-writing` skill's `references/samples.md` and write the body in the same length and shape. Use the
    user's words from the brief as they are. Run the `humanizer` skill's checks on it and fix every tell.
 4. Put a capture from the brief in Testing under the local test line, as `![what it shows](url)`. The words
-   `no player-visible change` in a brief mean there is no capture; leave them out of the body.
+   `no player-visible change` or `captures unavailable: <reason>` in a brief mean there is no capture; leave them
+   out of the body.
 5. Run `mktemp` alone and write the body to the path it prints with the Write tool; other agents share the
    scratchpad, so never reuse a fixed name like `pr-body.md`. Create or edit the PR with `gh pr create` or
    `gh pr edit`, `-R <repo>`, and `--body-file <that literal path>`, in a command of its own; no stdin (`-`), shell

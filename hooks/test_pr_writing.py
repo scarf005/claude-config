@@ -198,11 +198,13 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNone(brief_problem({"subagent_type": "pr-writer", "prompt": "PR #5. Delete the line x."}))
 
     def test_new_pr_brief_needs_captures(self):
-        """A brief naming a base is denied without an asciinema or .webp URL, unless it says nothing visible changed."""
+        """A new-PR brief needs capture URLs, "no player-visible change", or "captures unavailable: <reason>"."""
         brief = {"subagent_type": "pr-writer", "prompt": "Repo a/b, base main, head x. No captures."}
         self.assertIsNotNone(brief_problem(brief))
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. Before https://x/y/before.webp, https://asciinema.org/a/1"}))
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. No player-visible change."}))
+        self.assertIsNone(brief_problem(brief | {"prompt": "base main. Captures unavailable: the issue has no save."}))
+        self.assertIsNotNone(brief_problem(brief | {"prompt": "base main. Captures unavailable."}))
 
     def test_webp_without_asciinema_needs_tiles(self):
         """A brief with only .webp URLs is denied unless it names a tiles capture, which has no terminal recording."""
