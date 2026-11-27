@@ -183,6 +183,7 @@ def body_problem(command):
 ASCIINEMA = re.compile(r"https?://\S*asciinema\.org/a/")
 WEBP = re.compile(r"https?://\S*\.webp\b")
 NO_VISIBLE_CHANGE = "no player-visible change"
+PERF = re.compile(r"(?i)\bperf\b|\bfaster\b|\bspeedup\b|\d(?:\.\d+)?x\b")
 CAPTURES_UNAVAILABLE = re.compile(r"(?i)\bcaptures unavailable:\s*\w")
 EXISTING_PR = re.compile(r"(?i)\bPR\s*#?\d+")
 NOTES_FILE = re.compile(r"(?:^|\s)/\S+\.(?:md|txt)\b")
@@ -215,6 +216,9 @@ def brief_problem(tool_input):
         return f"Run `{WRITER}` on its own model: leave out `model` (or pass `opus`)."
     if lacks_captures(tool_input) and not EXISTING_PR.search(prompt):
         return NO_CAPTURES
+    if NO_VISIBLE_CHANGE in prompt.lower() and PERF.search(prompt):
+        return (f"A faster game is a player-visible change: replace `{NO_VISIBLE_CHANGE}` with before/after "
+                "captures of each benchmarked scene (gui-capture: one animated .webp per scene, wait bars).")
     if NOTES_FILE.search(prompt):
         return (
             f"A `{WRITER}` brief cannot point to a notes file: it carries the session story past the "

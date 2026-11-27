@@ -207,6 +207,15 @@ class PrWritingTest(unittest.TestCase):
         self.assertIsNone(brief_problem(brief | {"prompt": "base main. Captures unavailable: the issue has no save."}))
         self.assertIsNotNone(brief_problem(brief | {"prompt": "base main. Captures unavailable."}))
 
+    def test_perf_brief_cannot_claim_no_visible_change(self):
+        """PR 11057 "perf: make waiting faster" went out with "no player-visible change"; a faster wait is visible."""
+        for prompt in ["PR #11057, base main, perf: make waiting faster. No player-visible change.",
+                       "Repo a/b, base main, 1.2x speedup. no player-visible change"]:
+            brief = {"subagent_type": "pr-writer", "prompt": prompt}
+            self.assertIsNotNone(brief_problem(brief), prompt)
+        self.assertIsNone(brief_problem({"subagent_type": "pr-writer",
+                                         "prompt": "PR #5, base main, perf. Before https://x/b.webp tiles."}))
+
     def test_webp_without_asciinema_needs_tiles(self):
         """A brief with only .webp URLs is denied unless it names a tiles capture, which has no terminal recording."""
         brief = {"subagent_type": "pr-writer", "prompt": "base main. Before https://x/before.webp popup."}
