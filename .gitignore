@@ -30,6 +30,8 @@
 !hooks/test_unstacked_pr.py
 !hooks/local_bench.py
 !hooks/test_local_bench.py
+!hooks/bench_rounds.py
+!hooks/test_bench_rounds.py
 !hooks/rm_guard.py
 !hooks/test_rm_guard.py
 !commands/
