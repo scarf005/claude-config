@@ -170,8 +170,8 @@ def body_problem(command):
                 f"{path} links a bars-only animation. Show each scene as a game recording with a bar under each "
                 "side, and put the numbers in the table."
             )
-        if (rounds := re.search(r"(?i)\bmedian of (\d+)", body)) and int(rounds[1]) > 5:
-            return f"{path} reports a median of {rounds[1]}. Benchmark rounds are 3 to 5; rerun with 5."
+        if (rounds := re.search(r"(?i)\bmedian of (\d+)", body)) and int(rounds[1]) < 5:
+            return f"{path} reports a median of {rounds[1]}. Benchmark at least 5 rounds; rerun with 5."
         if (words := prose_words(body)) > PROSE_LIMIT:
             return (
                 f"{path} has {words} words of prose; 90% of the user's own PRs stay within {PROSE_LIMIT} words. "
