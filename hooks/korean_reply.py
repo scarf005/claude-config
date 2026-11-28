@@ -27,24 +27,25 @@ def is_english(text):
     )
 
 
-def main():
-    data = json.load(sys.stdin)
-    if data.get("stop_hook_active"):
-        return
-    path = data.get("transcript_path")
-    if not path:
-        return
-    with open(path, encoding="utf-8") as f:
+def final_texts(data):
+    """Text blocks of the assistant entries after the last user entry, plus last_assistant_message."""
+    with open(data["transcript_path"], encoding="utf-8") as f:
         entries = [json.loads(line) for line in f if line.strip()]
     start = max((i for i, e in enumerate(entries) if e.get("type") == "user"), default=-1)
-    texts = [
+    return [
         c.get("text", "")
         for e in entries[start + 1:]
         if e.get("type") == "assistant"
         for c in e.get("message", {}).get("content") or []
         if isinstance(c, dict) and c.get("type") == "text"
     ] + [data.get("last_assistant_message") or ""]
-    bad = [t for t in texts if is_english(t)]
+
+
+def main():
+    data = json.load(sys.stdin)
+    if data.get("stop_hook_active") or not data.get("transcript_path"):
+        return
+    bad = [t for t in final_texts(data) if is_english(t)]
     if bad:
         print(json.dumps({
             "decision": "block",
