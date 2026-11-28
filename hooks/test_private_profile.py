@@ -45,6 +45,17 @@ class PrivateProfileTest(unittest.TestCase):
         # "~nouser/x" has no home directory; expanduser raises RuntimeError, so read the token as a plain path
         self.assertIsNone(run_hook("ls ~nouser/x.py ~~"))
 
+    def test_process_listings_and_searches_pass(self):
+        self.assertIsNone(run_hook("pgrep -af -i 'bluearchive|gamescope' | cut -c1-200"))
+        self.assertIsNone(run_hook("ps -eo pid,args | rg -i 'proton|gamescope' | rg -v rg"))
+        self.assertIsNone(run_hook(f"rg -n userdir {HOOK} | head"))
+        self.assertIsNone(run_hook("cat > run.sh <<'EOF'\ngamescope -- game --userdir ud/\nEOF"))
+
+    def test_launch_after_a_search_or_inside_a_heredoc_is_denied(self):
+        self.assertEqual(run_hook("pgrep gamescope || gamescope -- game"), "deny")
+        self.assertEqual(run_hook("env -u DISPLAY gamescope -- game"), "deny")
+        self.assertEqual(run_hook("python3 - <<'EOF'\nsubprocess.run(['xvfb-run', 'app'])\nEOF"), "deny")
+
     def test_unrelated_commands_pass(self):
         self.assertIsNone(violation("gamescopectl screenshot shot.png"))
         self.assertIsNone(violation("./cataclysm-bn-tiles --check-mods"))

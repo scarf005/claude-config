@@ -3,8 +3,9 @@
 
 An automated launch under gamescope or xvfb-run, or a Cataclysm launch with `--userdir`/`--world`,
 must isolate its config: `--configdir`, `XDG_CONFIG_HOME=` or `HOME=`. `--userdir` alone still
-writes `~/.config/cataclysm-bn/options.json`. Checks the Bash command and the text of every script
-file it names, since launches often live in a script (`cargo -Zscript live.rs`).
+writes `~/.config/cataclysm-bn/options.json`. Checks every command of the Bash line except searches
+and process listings (`pgrep gamescope`), with the text of every script that command names, since
+launches often live in a script (`cargo -Zscript live.rs`).
 """
 import json
 import re
@@ -15,8 +16,7 @@ from pathlib import Path
 LAUNCH = re.compile(r"\bgamescope\b(?!ctl)|\bxvfb-run\b|--userdir\b|--world\b")
 ISOLATED = re.compile(r"--configdir\b|\bXDG_CONFIG_HOME=|(?<![\w$])HOME=")
 SCRIPT_SUFFIXES = {".rs", ".sh", ".py", ".fish", ".ts", ".js"}
-SHELLS = {"bash", "sh", "dash", "zsh", "fish"}
-READERS = {"rg", "cat", "sed", "git", "gh", "ls", "fd", "head", "tail", "wc", "echo", "printf"}
+READERS = {"rg", "cat", "sed", "git", "gh", "ls", "fd", "head", "tail", "wc", "echo", "printf", "cut", "ps", "pgrep", "pidof"}
 WRAPPERS = {"env", "exec", "time", "nice", "command", "sudo", "then", "do", "else", "{", "(", "!"}
 ASSIGNMENT = re.compile(r"^[A-Za-z_]\w*=")
 HEREDOC = re.compile(r"(?<!<)<<(?!<)-?\s*(['\"]?)([A-Za-z_]\w*)\1")
@@ -48,7 +48,7 @@ def program(command):
 
 
 def shell_commands(text):
-    """Yield every command of a shell text. A heredoc body counts only when a shell reads it."""
+    """Yield every command of a shell text. A heredoc body counts unless a reader such as cat takes it."""
     lines = text.replace("\\\n", " ").splitlines()
     i = 0
     while i < len(lines):
@@ -59,9 +59,9 @@ def shell_commands(text):
         heredoc = HEREDOC.search(line)
         if not heredoc:
             continue
-        shell_input = any("<<" in part and program(part) in SHELLS for part in parts)
+        run_input = any("<<" in part and program(part) not in READERS for part in parts)
         while i < len(lines) and lines[i].strip() != heredoc.group(2):
-            if shell_input:
+            if run_input:
                 yield from split_commands(lines[i])
             i += 1
         i += 1
@@ -82,8 +82,16 @@ def script_texts(command):
 
 
 def violation(command):
+    if ISOLATED.search(command):
+        return None
     return next(
-        (text for text in [command, *script_texts(command)] if LAUNCH.search(text) and not ISOLATED.search(text)),
+        (
+            text
+            for part in shell_commands(command)
+            if program(part) not in READERS
+            for text in [part, *script_texts(part)]
+            if LAUNCH.search(text) and not ISOLATED.search(text)
+        ),
         None,
     )
 
