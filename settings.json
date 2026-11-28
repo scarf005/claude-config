@@ -109,6 +109,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/banned_words.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/korean_reply.py\"",
             "timeout": 10
           },
@@ -196,6 +201,11 @@
           },
           {
             "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/banned_words.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/md_table.py\"",
             "timeout": 5
           },
@@ -244,6 +254,11 @@
       {
         "matcher": "Edit|MultiEdit|Write",
         "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.config/claude/hooks/banned_words.py\"",
+            "timeout": 5
+          },
           {
             "type": "command",
             "command": "python3 \"$HOME/.config/claude/hooks/prose_gate.py\"",

@@ -36,5 +36,7 @@
 !hooks/test_ci_watch.py
 !hooks/rm_guard.py
 !hooks/test_rm_guard.py
+!hooks/banned_words.py
+!hooks/test_banned_words.py
 !commands/
 !commands/voice.md
