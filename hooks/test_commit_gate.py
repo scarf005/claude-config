@@ -37,7 +37,9 @@ class CommitGateTest(unittest.TestCase):
             self.assertTrue(needs_review([EDIT, STAT, use("Bash", command=cmd)]), cmd)
 
     def test_measurement_after_last_edit_allows_commit(self):
-        for cmd in ['rg "sed -i" docs', "make 2>&1 > /dev/null", "echo 1 -> 3", "run > /tmp/log"]:
+        for cmd in ['rg "sed -i" docs', "make 2>&1 > /dev/null", "echo 1 -> 3", "run > /tmp/log",
+                    'git commit -m "perf: x" -m "3 > 2"', "git add a && git commit -m '<b> c'",
+                    'git commit -m "perf: x\n\n- a > b"']:
             self.assertFalse(needs_review([EDIT, STAT, use("Bash", command=cmd)]), cmd)
         self.assertFalse(needs_review([EDIT, use("Bash", command="git --no-pager diff --shortstat main..."),
                                        use("Bash", command="git log -p main..")]))
